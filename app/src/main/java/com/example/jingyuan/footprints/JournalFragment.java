@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +33,7 @@ public class JournalFragment extends Fragment {
     private String mParam1;
     private String mParam2;
     private ListView lv;
-    public List<Journal> list = new ArrayList<>();
+    public List<Journal> journals = new ArrayList<>();
     MyJournalViewAdapter madapter;
 
     private OnFragmentInteractionListener mListener;
@@ -71,8 +72,27 @@ public class JournalFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.v("JournalFragment", "onCreateView");
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_journal, container, false);
+        View v = inflater.inflate(R.layout.fragment_journal, container, false);
+
+        // Initialization
+        lv = v.findViewById(R.id.listview_journals);
+        journals = new ArrayList<>();
+        // test data
+        ArrayList<String> testTags = new ArrayList<>();
+        testTags.add("tag1");
+        testTags.add("tag2");
+        testTags.add("tag3");
+        journals.add(new Journal("Journal1", testTags, 11, 30, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal title", testTags, 12, 1, "21 Anthony Rd., Edison, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("OMG OMG", testTags, 1, 2, "1050 George St., New Brunswick, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+
+        madapter = new MyJournalViewAdapter(getActivity(), journals);
+        lv.setAdapter(madapter);
+
+        return v;
     }
 
     @Override

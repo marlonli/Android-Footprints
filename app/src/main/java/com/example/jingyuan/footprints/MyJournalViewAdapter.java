@@ -9,6 +9,7 @@ import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -20,8 +21,9 @@ public class MyJournalViewAdapter extends BaseAdapter {
     private LayoutInflater inflater;
     public List<Journal> journals;
 
-    public MyJournalViewAdapter() {
-        super();
+    public MyJournalViewAdapter(Activity activity, List<Journal> journals) {
+        this.activity = activity;
+        this.journals = journals;
     }
 
     @Override
@@ -51,18 +53,36 @@ public class MyJournalViewAdapter extends BaseAdapter {
 
             // Get TextView
             mHolder = new ViewHolder();
+            mHolder.title = convertView.findViewById(R.id.list_title);
+            mHolder.content = convertView.findViewById(R.id.list_content);
+            mHolder.tag = convertView.findViewById(R.id.list_tag);
+            mHolder.month = convertView.findViewById(R.id.list_mon);
+            mHolder.date = convertView.findViewById(R.id.list_date);
+            mHolder.location = convertView.findViewById(R.id.list_location);
             convertView.setTag(mHolder);
         }
         else {
             mHolder = (ViewHolder) convertView.getTag();
         }
 
-        // Set TextView
-
+        // Set text
+        mHolder.title.setText(journals.get(i).getTitle());
+        mHolder.content.setText(journals.get(i).getContent());
+        String tags = journals.get(i).getTags().toString();
+        mHolder.tag.setText(tags.substring(1,tags.length() - 1));
+        mHolder.month.setText(journals.get(i).getMonth());
+        mHolder.date.setText(journals.get(i).getDate());
+        mHolder.location.setText(journals.get(i).getLocation());
 
         return convertView;
     }
 
     final class ViewHolder {
+        TextView title;
+        TextView content;
+        TextView tag;
+        TextView month;
+        TextView date;
+        TextView location;
     }
 }

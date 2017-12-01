@@ -18,9 +18,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:{
-                    String para1 = "journal_para1";
-                    String para2 = "journal_para2";
-                    getFragmentManager().beginTransaction().replace(R.id.content, JournalFragment.newInstance(para1, para2), "Album").addToBackStack(null).commit();
+                    showJournalList();
                     return true;
                 }
                 case R.id.navigation_album: {
@@ -48,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
 
         BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        showJournalList();
     }
 
     @Override
@@ -55,4 +54,9 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
 
     }
 
+    public void showJournalList() {
+        String para1 = "journal_para1";
+        String para2 = "journal_para2";
+        getFragmentManager().beginTransaction().replace(R.id.content, JournalFragment.newInstance(para1, para2), "Journal").addToBackStack(null).commit();
+    }
 }
