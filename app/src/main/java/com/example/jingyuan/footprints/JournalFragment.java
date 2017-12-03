@@ -1,20 +1,31 @@
 package com.example.jingyuan.footprints;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
+/**
+ * Created by jingyuan on 11/30/17.
+ */
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -28,6 +39,9 @@ public class JournalFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final String JOURNAL_OBJECT = "journalObj";
+    private static final int JOURNAL_EDITOR_REQ = 1;
+    private static final int NEW_JOURNAL = -1;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -81,13 +95,14 @@ public class JournalFragment extends Fragment {
         lv = v.findViewById(R.id.listview_journals);
         journals = new ArrayList<>();
         // test data
+        Date currentTime = Calendar.getInstance().getTime();
         ArrayList<String> testTags = new ArrayList<>();
         testTags.add("tag1");
         testTags.add("tag2");
         testTags.add("tag3");
-        journals.add(new Journal("Journal1", testTags, 11, 30, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-        journals.add(new Journal("Journal title", testTags, 12, 1, "21 Anthony Rd., Edison, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("OMG OMG", testTags, 1, 2, "1050 George St., New Brunswick, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal title", testTags, currentTime, "21 Anthony Rd., Edison, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("OMG OMG", testTags, currentTime, "1050 George St., New Brunswick, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
 
         madapter = new MyJournalViewAdapter(getActivity(), journals);
         lv.setAdapter(madapter);
@@ -98,6 +113,24 @@ public class JournalFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+
+        // Set floating button
+        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.floatingActionButton_add);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openEditor(NEW_JOURNAL);
+            }
+        });
+
+        // Set list item onClick event
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                openEditor(i);
+            }
+        });
 
     }
 
@@ -138,5 +171,27 @@ public class JournalFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.v("fragment contact status", "onActivityResult");
+        if (requestCode == Activity.RESULT_FIRST_USER && data != null) {
+
+            if (resultCode == JOURNAL_EDITOR_REQ) {
+                Journal j = (Journal) data.getSerializableExtra(JOURNAL_OBJECT);
+
+                // TODO: read database to modify journal list
+
+                madapter.notifyDataSetChanged();
+            }
+        }
+    }
+
+    public void openEditor(int journalIndex) {
+        Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
+        if (journalIndex != -1)
+            intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+        startActivityForResult(intent, JOURNAL_EDITOR_REQ);
     }
 }

@@ -1,73 +1,46 @@
 package com.example.jingyuan.footprints;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by jingyuan on 11/30/17.
  */
 
-class Journal {
+class Journal implements Serializable {
     private String title;
     private ArrayList<String> tags;
-    private String month;
-    private String date;
+    private long _id;
+    // Sat Dec 02 19:19:45 EST 2017
+    Date dateTime;
     private String location;
     private String content;
 
-    public Journal(String title, ArrayList<String> tags, int month, int date, String location, String content) {
+    public Journal(String title, ArrayList<String> tags, Date currentTime, String location, String content) {
         this.title = title;
         this.tags = tags;
         this.location = location;
         this.content = content;
+        this.dateTime = currentTime;
 
-        // Set month and date
-        switch (month) {
-            case 1:
-                this.month = "Jan.";
-                break;
-            case 2:
-                this.month = "Feb.";
-                break;
-            case 3:
-                this.month = "Mar.";
-                break;
-            case 4:
-                this.month = "Apr.";
-                break;
-            case 5:
-                this.month = "May";
-                break;
-            case 6:
-                this.month = "June";
-                break;
-            case 7:
-                this.month = "July";
-                break;
-            case 8:
-                this.month = "Aug.";
-                break;
-            case 9:
-                this.month = "Sep.";
-                break;
-            case 10:
-                this.month = "Oct.";
-                break;
-            case 11:
-                this.month = "Nov.";
-                break;
-            case 12:
-                this.month = "Dec.";
-                break;
-            default:
-                break;
-        }
+    }
 
-        if (date < 10) {
-            this.date = "0" + date;
-        }
-        else {
-            this.date = String.valueOf(date);
-        }
+    public long get_id() {
+        return _id;
+    }
+
+    public void set_id(int _id) {
+        this._id = _id;
+    }
+
+    public Date getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(Date dateTime) {
+        this.dateTime = dateTime;
     }
 
     public String getTitle() {
@@ -85,22 +58,6 @@ class Journal {
     public void setTags(ArrayList<String> tags) {
         this.tags = tags;
     }
-
-    public String getMonth() {
-        return month;
-    }
-
-//    public void setMonth(int month) {
-//        this.month = month;
-//    }
-
-    public String getDate() {
-        return date;
-    }
-
-//    public void setDate(int date) {
-//        this.date = date;
-//    }
 
     public String getLocation() {
         return location;

@@ -4,10 +4,10 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:layout_marginTop="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/text_margin_small"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -21,72 +21,74 @@
 
             <LinearLayout
                 android:weightSum="7"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="4dp">
+                android:layout_marginBottom="@dimen/text_margin_small">
 
                 <TextView
                     android:id="@+id/list_title"
-                    android:layout_width="219dp"
-                    android:layout_height="20dp"
+                    android:layout_width="0dp"
+                    android:layout_height="24dp"
+                    android:layout_marginRight="@dimen/text_margin"
                     android:text="Title"
-                    android:textSize="17dp"
-                    android:layout_weight="5"/>
+                    style="@style/ListFont.Title"
+                    android:layout_weight="4.5"/>
 
                 <TextView
                     android:id="@+id/list_tag"
-                    android:layout_width="101dp"
-                    android:layout_height="20dp"
+                    android:layout_width="0dp"
+                    android:layout_height="24dp"
+                    android:layout_marginRight="@dimen/text_margin"
+                    android:layout_marginLeft="@dimen/text_margin"
                     android:gravity="right|bottom"
                     android:text="tag1, tag2"
-                    android:textSize="9dp"
-                    android:layout_weight="2"/>
+                    style="@style/ListFont.xSmall"
+                    android:layout_weight="2.5"/>
             </LinearLayout>
 
             <TextView
                 android:id="@+id/list_content"
-                android:layout_marginTop="2dp"
-                android:layout_marginRight="8dp"
+                style="@style/ListFont"
+                android:ellipsize="end"
+                android:maxLines="2"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
-                android:textSize="12dp"
+                android:layout_height="34dp"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/text_margin_small"
                 android:text="content, content, content, content content content content content content, content, content, content, content, content, content, content, content, content, content, content" />
         </LinearLayout>
 
         <LinearLayout
-            android:layout_width="40dp"
-            android:layout_height="50dp"
+            android:layout_width="54dp"
+            android:layout_height="match_parent"
             android:gravity="right"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/list_mon"
-                android:layout_marginTop="4dp"
                 android:layout_width="match_parent"
-                android:layout_height="10dp"
+                android:layout_height="24dp"
                 android:gravity="center"
-                android:text="Nov."
-                android:textSize="9dp" />
+                style="@style/ListFont.Small" />
 
             <TextView
                 android:id="@+id/list_date"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
+                android:layout_height="56dp"
                 android:gravity="center"
-                android:text="30"
-                android:textSize="30dp" />
+                style="@style/ListFont.xxLarge" />
         </LinearLayout>
 
     </LinearLayout>
 
     <TextView
         android:id="@+id/list_location"
-        android:layout_marginTop="2dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="@dimen/text_margin_small"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:text="123 Davidson Rd., Piscataway, NJ"
-        android:textSize="8dp"
+        style="@style/ListFont.xSmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="0.8"/>
