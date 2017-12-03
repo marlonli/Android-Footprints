@@ -21,7 +21,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private static final int JOURNAL_EDITOR_REQ = 1;
     private EditText et_title;
     private EditText et_content;
-    private TextView tv_date;
+    private EditText et_date;
     private FloatingActionButton fab_save;
 
     @Override
@@ -44,8 +44,8 @@ public class JournalEditorActivity extends AppCompatActivity {
 
         // Set date
         String[] date = Calendar.getInstance().getTime().toString().split(" ");
-        TextView tv_date = (TextView) findViewById(R.id.textView_date);
-        tv_date.setText(date[0] + ", " + date[1] + " " + date[2] + ", " + date[5]);
+        et_date = (EditText) findViewById(R.id.editText_date);
+        et_date.setText(date[0] + ", " + date[1] + " " + date[2] + ", " + date[5]);
     }
 
     private void initialization() {
@@ -60,6 +60,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO: set return value (save to database)
                 Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
+
 //                intent.putExtra("addPerson", add);
 //                intent.putExtra("size", relation.size());
 

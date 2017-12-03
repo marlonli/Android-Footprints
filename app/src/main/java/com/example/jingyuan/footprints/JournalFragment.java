@@ -3,6 +3,8 @@ package com.example.jingyuan.footprints;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -16,12 +18,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.baoyz.swipemenulistview.SwipeMenu;
+import com.baoyz.swipemenulistview.SwipeMenuCreator;
+import com.baoyz.swipemenulistview.SwipeMenuItem;
+import com.baoyz.swipemenulistview.SwipeMenuLayout;
+import com.baoyz.swipemenulistview.SwipeMenuListView;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import static android.provider.AlarmClock.EXTRA_MESSAGE;
+import static com.example.jingyuan.footprints.MainActivity.dipToPixels;
 
 /**
  * Created by jingyuan on 11/30/17.
@@ -46,11 +55,49 @@ public class JournalFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private ListView lv;
+    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
     MyJournalViewAdapter madapter;
+    FloatingActionButton fab_add;
 
     private OnFragmentInteractionListener mListener;
+
+    // Create SwipeMenuCreator
+    SwipeMenuCreator creator = new SwipeMenuCreator() {
+
+        @Override
+        public void create(SwipeMenu menu) {
+//            // create "open" item
+//            SwipeMenuItem openItem = new SwipeMenuItem(
+//                    getActivity().getApplicationContext());
+//            // set item background
+//            openItem.setBackground(new ColorDrawable(Color.rgb(0xC9, 0xC9,
+//                    0xCE)));
+//            // set item width
+//            openItem.setWidth(Math.round(dipToPixels(getContext(), 90)));
+//            // set item title
+//            openItem.setTitle("Open");
+//            // set item title fontsize
+//            openItem.setTitleSize(18);
+//            // set item title font color
+//            openItem.setTitleColor(Color.WHITE);
+//            // add to menu
+//            menu.addMenuItem(openItem);
+
+            // create "delete" item
+            SwipeMenuItem deleteItem = new SwipeMenuItem(
+                    getActivity().getApplicationContext());
+            // set item background
+            deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9,
+                    0x3F, 0x25)));
+            // set item width
+            deleteItem.setWidth(Math.round(dipToPixels(getContext(), 90)));
+            // set a icon
+            deleteItem.setIcon(R.drawable.ic_delete_white_36px);
+            // add to menu
+            menu.addMenuItem(deleteItem);
+        }
+    };
 
     public JournalFragment() {
         // Required empty public constructor
@@ -106,6 +153,7 @@ public class JournalFragment extends Fragment {
 
         madapter = new MyJournalViewAdapter(getActivity(), journals);
         lv.setAdapter(madapter);
+        fab_add = (FloatingActionButton) getActivity().findViewById(R.id.floatingActionButton_add);
 
         return v;
     }
@@ -114,10 +162,12 @@ public class JournalFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        // set creator
+        lv.setMenuCreator(creator);
+        lv.setSwipeDirection(SwipeMenuListView.DIRECTION_LEFT);
 
         // Set floating button
-        FloatingActionButton fab = (FloatingActionButton) getActivity().findViewById(R.id.floatingActionButton_add);
-        fab.setOnClickListener(new View.OnClickListener() {
+        fab_add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 openEditor(NEW_JOURNAL);
@@ -129,6 +179,19 @@ public class JournalFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 openEditor(i);
+            }
+        });
+
+        lv.setOnMenuItemClickListener(new SwipeMenuListView.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(int position, SwipeMenu menu, int index) {
+                switch (index) {
+                    case 0:
+                        // TODO: set delete action: delete journals.get(i)
+                        break;
+                }
+                // false : close the menu; true : not close the menu
+                return false;
             }
         });
 
