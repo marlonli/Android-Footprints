@@ -14,6 +14,11 @@
         android:layout_height="0dp"
         android:layout_weight="1">
 
+    <android.support.design.widget.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary">
+
 
         <android.support.v7.widget.Toolbar
             style="@style/AppTheme.ActionBar.Event"
@@ -22,24 +27,21 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             android:minHeight="?attr/actionBarSize"
+            app:layout_scrollFlags="scroll|enterAlways"
+            android:windowActionModeOverlay="true"
             android:elevation="4dp" />
+    </android.support.design.widget.AppBarLayout>
 
         <FrameLayout
             android:id="@+id/fragment_container"
             android:layout_marginTop="?attr/actionBarSize"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
              />
 
-        <android.support.design.widget.FloatingActionButton
-            android:layout_gravity="bottom|end"
-            android:id="@+id/floatingActionButton_add"
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            app:fabSize="mini"
-            app:srcCompat="@drawable/ic_add_white_24dp" />
+
+
     </FrameLayout>
 
     <android.support.design.widget.BottomNavigationView
@@ -48,6 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
+
         app:menu="@menu/navigation" />
 
 </LinearLayout>

@@ -13,6 +13,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -58,7 +61,6 @@ public class JournalFragment extends Fragment {
     private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
     MyJournalViewAdapter madapter;
-    FloatingActionButton fab_add;
 
     private OnFragmentInteractionListener mListener;
 
@@ -138,6 +140,9 @@ public class JournalFragment extends Fragment {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_journal, container, false);
 
+        // Set action bar menu
+        setHasOptionsMenu(true);
+
         // Initialization
         lv = v.findViewById(R.id.listview_journals);
         journals = new ArrayList<>();
@@ -150,10 +155,12 @@ public class JournalFragment extends Fragment {
         journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
         journals.add(new Journal("Journal title", testTags, currentTime, "21 Anthony Rd., Edison, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("OMG OMG", testTags, currentTime, "1050 George St., New Brunswick, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+
 
         madapter = new MyJournalViewAdapter(getActivity(), journals);
         lv.setAdapter(madapter);
-        fab_add = (FloatingActionButton) getActivity().findViewById(R.id.floatingActionButton_add);
 
         return v;
     }
@@ -165,14 +172,6 @@ public class JournalFragment extends Fragment {
         // set creator
         lv.setMenuCreator(creator);
         lv.setSwipeDirection(SwipeMenuListView.DIRECTION_LEFT);
-
-        // Set floating button
-        fab_add.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                openEditor(NEW_JOURNAL);
-            }
-        });
 
         // Set list item onClick event
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -195,6 +194,36 @@ public class JournalFragment extends Fragment {
             }
         });
 
+    }
+
+    // Add menu to action bar
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_scrolling, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_scrolling, menu);
+//        return super.onCreateOptionsMenu(menu);
+//    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_add:
+                // User chose the "add" item
+                openEditor(NEW_JOURNAL);
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event

@@ -16,7 +16,7 @@
 
     <style name="AppTheme.ActionBar.Base" parent="">
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
-        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark</item>
     </style>
 
     <style name="AppTheme.ActionBar.Event" parent="AppTheme.ActionBar">
