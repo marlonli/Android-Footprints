@@ -32,8 +32,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import static android.provider.AlarmClock.EXTRA_MESSAGE;
-import static com.example.jingyuan.footprints.MainActivity.dipToPixels;
 
 /**
  * Created by jingyuan on 11/30/17.
@@ -93,7 +91,7 @@ public class JournalFragment extends Fragment {
             deleteItem.setBackground(new ColorDrawable(Color.rgb(0xF9,
                     0x3F, 0x25)));
             // set item width
-            deleteItem.setWidth(Math.round(dipToPixels(getContext(), 90)));
+            deleteItem.setWidth(Math.round(Utilities.dipToPixels(getContext(), 90)));
             // set a icon
             deleteItem.setIcon(R.drawable.ic_delete_white_36px);
             // add to menu
