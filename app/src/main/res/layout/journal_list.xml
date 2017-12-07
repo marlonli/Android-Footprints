@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground">
 
     <LinearLayout
         android:layout_marginTop="@dimen/activity_vertical_margin"
@@ -83,15 +84,15 @@
 
     <TextView
         android:id="@+id/list_location"
-        android:layout_marginTop="@dimen/text_margin_small"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:text="123 Davidson Rd., Piscataway, NJ"
         style="@style/ListFont.xSmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0.8"/>
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/text_margin_small"
+        android:layout_weight="0.8"
+        android:text="123 Davidson Rd., Piscataway, NJ" />
 
 
 </LinearLayout>

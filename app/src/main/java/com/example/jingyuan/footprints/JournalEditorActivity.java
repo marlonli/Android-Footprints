@@ -20,6 +20,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
     private static final String JOURNAL_OBJECT = "journalObj";
     private static final int JOURNAL_EDITOR_REQ = 1;
+    private Journal journal;
     private EditText et_title;
     private EditText et_content;
     private EditText et_date;
@@ -39,15 +40,16 @@ public class JournalEditorActivity extends AppCompatActivity {
 
         // Get intent
         Intent intent = getIntent();
-        Journal j = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
+        journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
         // TODO: edit journal if j != null
-        Log.v("Journal Editor", "journal: " + j);
-        if (j != null) {
-            et_title.setText(j.getTitle());
-            et_content.setText(j.getContent());
+        Log.v("Journal Editor", "journal: " + journal);
+        if (journal != null) {
+            et_title.setText(journal.getTitle());
+            et_content.setText(journal.getContent());
         }
 
         // Set date
+        // Format: Sat Dec 02 19:19:45 EST 2017
         String[] date = Calendar.getInstance().getTime().toString().split(" ");
         et_date = (EditText) findViewById(R.id.editText_date);
         et_date.setText(date[0] + ", " + date[1] + " " + date[2] + ", " + date[5]);
@@ -70,6 +72,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                 // TODO: set return value (save to database)
                 Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
 
+                intent.putExtra(JOURNAL_OBJECT, journal);
 //                intent.putExtra("addPerson", add);
 //                intent.putExtra("size", relation.size());
 

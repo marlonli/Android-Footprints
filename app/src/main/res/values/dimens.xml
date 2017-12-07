@@ -5,6 +5,7 @@
     <dimen name="bar_height">46dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="text_margin_small">8dp</dimen>
+    <dimen name="margin_bottom_112">112dp</dimen>
 
     <!--Text size-->
     <dimen name="text_size_xsmall">12sp</dimen>

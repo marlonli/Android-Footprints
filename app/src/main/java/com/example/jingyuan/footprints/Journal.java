@@ -13,12 +13,11 @@ class Journal implements Serializable {
     private String title;
     private ArrayList<String> tags;
     private long _id;
-    // Sat Dec 02 19:19:45 EST 2017
-    Date dateTime;
+    private long dateTime;
     private String location;
     private String content;
 
-    public Journal(String title, ArrayList<String> tags, Date currentTime, String location, String content) {
+    public Journal(String title, ArrayList<String> tags, long currentTime, String location, String content) {
         this.title = title;
         this.tags = tags;
         this.location = location;
@@ -35,11 +34,19 @@ class Journal implements Serializable {
         this._id = _id;
     }
 
-    public Date getDateTime() {
+    public long getDateTimeLong() {
         return dateTime;
     }
 
-    public void setDateTime(Date dateTime) {
+    // Sat Dec 02 19:19:45 EST 2017
+    public String getDateTimeString() {
+        Calendar date = Calendar.getInstance();
+        date.setTimeInMillis(dateTime);
+        Date dt = date.getTime();
+        return dt.toString();
+    }
+
+    public void setDateTime(long dateTime) {
         this.dateTime = dateTime;
     }
 

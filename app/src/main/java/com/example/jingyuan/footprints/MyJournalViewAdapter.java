@@ -71,8 +71,8 @@ public class MyJournalViewAdapter extends BaseAdapter {
         String tags = journals.get(i).getTags().toString();
         mHolder.tag.setText(tags.substring(1,tags.length() - 1));
         // Date format: Sat Dec 02 19:19:45 EST 2017
-        mHolder.month.setText(journals.get(i).getDateTime().toString().split(" ")[1]);
-        mHolder.date.setText(journals.get(i).getDateTime().toString().split(" ")[2]);
+        mHolder.month.setText(journals.get(i).getDateTimeString().toString().split(" ")[1]);
+        mHolder.date.setText(journals.get(i).getDateTimeString().toString().split(" ")[2]);
         mHolder.location.setText(journals.get(i).getLocation());
 
         return convertView;
