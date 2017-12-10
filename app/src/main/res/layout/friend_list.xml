@@ -4,23 +4,35 @@
     android:background="?android:attr/selectableItemBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/activity_vertical_margin"
-    android:layout_marginLeft="@dimen/activity_horizontal_margin"
-    android:layout_marginRight="@dimen/activity_horizontal_margin"
-    android:layout_marginBottom="@dimen/activity_vertical_margin"
     android:weightSum="1">
 
-    <ImageView
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_width="56dp"
-        android:layout_height="56dp" />
-
-    <TextView
-        android:text="MyUsername"
-        android:gravity="center_vertical"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/friends_profile"
+            android:layout_marginRight="@dimen/activity_horizontal_margin"
+            android:layout_width="56dp"
+            android:layout_height="56dp" />
+
+        <TextView
+            android:id="@+id/friends_username"
+            android:text="MyUsername"
+            style="@style/ListFont.subTitle"
+            android:gravity="center_vertical"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+
+
 
 
 

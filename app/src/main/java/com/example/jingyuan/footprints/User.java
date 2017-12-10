@@ -1,6 +1,8 @@
 package com.example.jingyuan.footprints;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,6 +18,14 @@ public class User implements Serializable{
     List<User> myFriends;
     List<Journal> myJournals;
     Bitmap profile;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+        myFriends = null;
+        myJournals = null;
+        profile = null;
+    }
 
     public long get_id() {
         return _id;
@@ -58,7 +68,7 @@ public class User implements Serializable{
     }
 
     public Bitmap getProfile() {
-        return profile;
+            return profile;
     }
 
     public void setProfile(Bitmap profile) {

@@ -43,7 +43,7 @@ public class FriendsFragment extends Fragment {
     private String mParam2;
     public List<User> friends = new ArrayList<>();
 
-    MyJournalRecyclerViewAdapter mAdapter;
+    MyFriendRecyclerViewAdapter mAdapter;
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
 
@@ -87,7 +87,7 @@ public class FriendsFragment extends Fragment {
         Log.v("PeopleFragment", "onCreateView");
 
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_people, container, false);
+        View v = inflater.inflate(R.layout.fragment_friends, container, false);
 
         // Set action bar menu
         setHasOptionsMenu(true);
@@ -105,39 +105,29 @@ public class FriendsFragment extends Fragment {
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(),
                 LinearLayout.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-
-        ItemBind itemBind = new ItemBind<User>() {
-            @Override
-            public void onBind(ItemView itemView, User u, final int position) {
-                itemView.setText(R.id.list_title, u.getTitle())
-                        .setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                //onClick item
-//                                openEditor(position);
-                            }
-                        });
-                itemView.setText(R.id.list_content, j.getContent());
-                itemView.setText(R.id.list_location, j.getLocation());
-                String tags = friends.get(position).getTags().toString();
-                itemView.setText(R.id.list_tag, tags.substring(1, tags.length() - 1));
-                itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
-                itemView.setText(R.id.list_date, j.getDateTimeString().toString().split(" ")[2]);
-                itemView.setOnClickListener(R.id.rightMenu_delete, new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // onClick delete
-                        Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
-                    }
-                });
-            }
-        };
-        SlideAdapter.load(people)
-                .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
-                .bind(itemBind)
-                .into(mRecyclerView);
+        mAdapter = new MyFriendRecyclerViewAdapter(friends);
+        mRecyclerView.setAdapter(mAdapter);
 
         return v;
+    }
+
+    private void addTestData() {
+        friends.add(new User("Lalalala", "123456"));
+        friends.add(new User("Lalalala1", "123456"));
+        friends.add(new User("Lalalala2", "123456"));
+        friends.add(new User("Lalalala3", "123456"));
+        friends.add(new User("Lalalala4", "123456"));
+        friends.add(new User("Lalalala5", "123456"));
+        friends.add(new User("Lalalala6", "123456"));
+        friends.add(new User("Lalalala7", "123456"));
+        friends.add(new User("Lalalala8", "123456"));
+        friends.add(new User("Lalalala9", "123456"));
+        friends.add(new User("Lalalala0", "123456"));
+        friends.add(new User("Lalalala11", "123456"));
+        friends.add(new User("Lalalala12", "123456"));
+        friends.add(new User("Lalalala13", "123456"));
+        friends.add(new User("Lalalala14", "123456"));
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event

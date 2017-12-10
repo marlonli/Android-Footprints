@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
                 case R.id.navigation_people:
                     String para1 = "para1";
                     String para2 = "para2";
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, PeopleFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, FriendsFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();
                     return true;
             }
             return false;

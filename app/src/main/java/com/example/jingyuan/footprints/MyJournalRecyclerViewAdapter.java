@@ -84,7 +84,8 @@ public class MyJournalRecyclerViewAdapter extends RecyclerView.Adapter<MyJournal
         // Date format: Sat Dec 02 19:19:45 EST 2017
         holder.month.setText(journals.get(position).getDateTimeString().toString().split(" ")[1]);
         holder.date.setText(journals.get(position).getDateTimeString().toString().split(" ")[2]);
-        holder.location.setText(journals.get(position).getLocation());
+        // TODO: lat, lng to address
+        holder.location.setText(journals.get(position).getLat() + journals.get(position).getLng());
         holder.itemView.setTag(position);
     }
 
