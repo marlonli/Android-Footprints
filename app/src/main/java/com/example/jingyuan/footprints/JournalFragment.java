@@ -79,7 +79,7 @@ public class JournalFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    // Create SwipeMenuCreator
+    /*// Create SwipeMenuCreator
     SwipeMenuCreator creator = new SwipeMenuCreator() {
 
         @Override
@@ -114,7 +114,7 @@ public class JournalFragment extends Fragment {
             // add to menu
             menu.addMenuItem(deleteItem);
         }
-    };
+    };*/
 
     public JournalFragment() {
         // Required empty public constructor
@@ -192,7 +192,8 @@ public class JournalFragment extends Fragment {
                             }
                         });
                 itemView.setText(R.id.list_content, j.getContent());
-                itemView.setText(R.id.list_location, j.getLocation());
+                // TODO: lat lng to address
+                itemView.setText(R.id.list_location, j.getLat() + j.getLng());
                 String tags = journals.get(position).getTags().toString();
                 itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
@@ -247,11 +248,11 @@ public class JournalFragment extends Fragment {
         testTags.add("tag1");
         testTags.add("tag2");
         testTags.add("tag3");
-        journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-        journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "21 Anthony Rd., Edison, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("OMG OMG", testTags, startDate1, "1050 George St., New Brunswick, NJ", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("Journal1", testTags, startDate2, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-        journals.add(new Journal("Journal1", testTags, currentTime, "12 Davidson Rd., Piscataway, NJ", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("OMG OMG", testTags, startDate1, "20", "-75", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "40", "-78", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
 
 
     }

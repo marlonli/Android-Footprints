@@ -24,7 +24,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import static java.security.AccessController.getContext;
 
-public class MainActivity extends AppCompatActivity implements AlbumFragment.OnFragmentInteractionListener, JournalFragment.OnFragmentInteractionListener, MapsFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements AlbumFragment.OnFragmentInteractionListener, JournalFragment.OnFragmentInteractionListener, MapsFragment.OnFragmentInteractionListener, FriendsFragment.OnFragmentInteractionListener{
 
     private static final int NEW_JOURNAL = -1;
     Toolbar myToolbar;
@@ -41,19 +41,21 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
                     return true;
                 }
                 case R.id.navigation_album: {
-                    String para1 = "album_para1";
-                    String para2 = "album_para2";
+                    String para1 = "para1";
+                    String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, AlbumFragment.newInstance(para1, para2), "Album").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_maps:{
-                    String para1 = "album_para1";
-                    String para2 = "album_para2";
+                    String para1 = "para1";
+                    String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, MapsFragment.newInstance(para1, para2), "Maps").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_people:
-//                    mTextMessage.setText(R.string.title_people);
+                    String para1 = "para1";
+                    String para2 = "para2";
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, PeopleFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();
                     return true;
             }
             return false;

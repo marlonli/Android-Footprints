@@ -14,13 +14,15 @@ class Journal implements Serializable {
     private ArrayList<String> tags;
     private long _id;
     private long dateTime;
-    private String location;
+    private String lat;
+    private String lng;
     private String content;
 
-    public Journal(String title, ArrayList<String> tags, long currentTime, String location, String content) {
+    public Journal(String title, ArrayList<String> tags, long currentTime, String lat, String lng, String content) {
         this.title = title;
         this.tags = tags;
-        this.location = location;
+        this.lat = lat;
+        this.lng = lng;
         this.content = content;
         this.dateTime = currentTime;
 
@@ -66,12 +68,20 @@ class Journal implements Serializable {
         this.tags = tags;
     }
 
-    public String getLocation() {
-        return location;
+    public String getLat() {
+        return lat;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
+
+    public String getLng() {
+        return lng;
+    }
+
+    public void setLng(String lng) {
+        this.lng = lng;
     }
 
     public String getContent() {
