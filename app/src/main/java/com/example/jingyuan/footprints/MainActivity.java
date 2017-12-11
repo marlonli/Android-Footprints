@@ -2,6 +2,7 @@ package com.example.jingyuan.footprints;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
     private static final int NEW_JOURNAL = -1;
     Toolbar myToolbar;
     private BottomNavigationView navigation;
+    private FloatingActionButton fab;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -37,22 +39,33 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_home:{
+                    fab.show();
                     showJournalList();
+//                    fab.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View view) {
+//                            Fragment jf = (JournalFragment) getFragmentManager().findFragmentById(R.id.recyclerView_journals);
+//
+//                        }
+//                    });
                     return true;
                 }
                 case R.id.navigation_album: {
+                    fab.hide();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, AlbumFragment.newInstance(para1, para2), "Album").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_maps:{
+                    fab.hide();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, MapsFragment.newInstance(para1, para2), "Maps").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_people:
+                    fab.show();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, FriendsFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();
@@ -71,6 +84,8 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
         // Set toolbar and navigation bar
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+
+        fab = (FloatingActionButton) findViewById(R.id.fab_newjournal);
 
         navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);

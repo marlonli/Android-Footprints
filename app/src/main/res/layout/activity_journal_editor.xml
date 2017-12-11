@@ -135,7 +135,7 @@
                 android:contentDescription="@null"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/ic_label_outline_black_24dp"
+                android:src="@drawable/ic_label_black_24dp"
                 android:scaleType="center"
                 android:background="?android:selectableItemBackground">
             </ImageButton>

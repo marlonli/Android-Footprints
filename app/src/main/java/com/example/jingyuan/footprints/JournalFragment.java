@@ -156,7 +156,7 @@ public class JournalFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_journal, container, false);
 
         // Set action bar menu
-        setHasOptionsMenu(true);
+//        setHasOptionsMenu(true);
 
         // Initialization
         journals = new ArrayList<>();
@@ -261,6 +261,8 @@ public class JournalFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+
+
 //        mAdapter.setOnItemClickListener(new MyJournalRecyclerViewAdapter.OnItemClickListener(){
 //            @Override
 //            public void onItemClick(View view , int position){
@@ -299,27 +301,27 @@ public class JournalFragment extends Fragment {
 
     // Add menu to action bar
 
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_scrolling, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add:
-                // User chose the "add" item
-                openEditor(NEW_JOURNAL);
-                return true;
-
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
+//    @Override
+//    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+//        inflater.inflate(R.menu.menu_scrolling, menu);
+//        super.onCreateOptionsMenu(menu, inflater);
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()) {
+//            case R.id.action_add:
+//                // User chose the "add" item
+//                openEditor(NEW_JOURNAL);
+//                return true;
+//
+//            default:
+//                // If we got here, the user's action was not recognized.
+//                // Invoke the superclass to handle it.
+//                return super.onOptionsItemSelected(item);
+//
+//        }
+//    }
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

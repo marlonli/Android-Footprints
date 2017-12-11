@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,8 +23,8 @@ public class User implements Serializable{
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        myFriends = null;
-        myJournals = null;
+        myFriends = new ArrayList<>();
+        myJournals = new ArrayList<>();
         profile = null;
     }
 

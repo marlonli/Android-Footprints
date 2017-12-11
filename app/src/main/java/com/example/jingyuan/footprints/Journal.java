@@ -1,5 +1,7 @@
 package com.example.jingyuan.footprints;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -12,11 +14,24 @@ import java.util.Date;
 class Journal implements Serializable {
     private String title;
     private ArrayList<String> tags;
+    private ArrayList<Bitmap> photos;
     private long _id;
     private long dateTime;
     private String lat;
     private String lng;
     private String content;
+
+    public ArrayList<Bitmap> getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(ArrayList<Bitmap> photos) {
+        this.photos = photos;
+    }
+
+    public void addPhoto(Bitmap photo) {
+        this.photos.add(photo);
+    }
 
     public Journal(String title, ArrayList<String> tags, long currentTime, String lat, String lng, String content) {
         this.title = title;
@@ -25,6 +40,7 @@ class Journal implements Serializable {
         this.lng = lng;
         this.content = content;
         this.dateTime = currentTime;
+        this.photos = new ArrayList<>();
 
     }
 

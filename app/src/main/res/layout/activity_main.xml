@@ -40,6 +40,18 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab_newjournal"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/fab_bottom_margin"
+        app:fabSize="normal"
+
+        android:src="@drawable/ic_add_white_24dp"
+        /> />
+
 
 
     <!--</FrameLayout>-->
@@ -51,6 +63,7 @@
         android:layout_height="56dp"
         android:layout_gravity="bottom"
         android:background="?android:attr/windowBackground"
+        android:fadeScrollbars="true"
         app:itemBackground="@android:color/white"
         app:itemIconTint="?attr/colorPrimary"
         app:itemTextColor="?attr/colorPrimaryDark"
