@@ -19,7 +19,7 @@ public class MyProfileActivity extends AppCompatActivity {
     private static final String PERSON_OBJECT = "person";
     private static final String PERSON_POSITION = "position";
     private static final int OPEN_PROFILE_REQ = 2;
-    private int position;
+    private int position; // if position == 0: my profile
 
     private User user;
     private ImageButton ib;
@@ -60,6 +60,7 @@ public class MyProfileActivity extends AppCompatActivity {
             myUsername.setEnabled(false);
             ib.setClickable(false);
         }
+        Log.v("MyProfile status", "position: " + position);
 
         // imageButton on click
         ib.setOnClickListener(new View.OnClickListener() {
@@ -75,23 +76,30 @@ public class MyProfileActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK ) {
-            // Set activity result on back.
-            String username = myUsername.getText().toString();
-            ib.setDrawingCacheEnabled(true);
-            Bitmap profile =  ib.getDrawingCache();
-            user.setUsername(username);
-            user.setProfile(profile);
+
             Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(PERSON_OBJECT, user);
             intent.putExtra(PERSON_POSITION, position);
+
+            if (position == 0) {
+                // Set activity result on back.
+                String username = myUsername.getText().toString();
+//                ib.setDrawingCacheEnabled(true);
+//                Bitmap profile =  ib.getDrawingCache();
+                user.setUsername(username);
+//                user.setProfile(profile);
+
+                intent.putExtra(PERSON_OBJECT, user);
+            }
+            Log.v("MyProfile status", "Result sent");
             setResult(OPEN_PROFILE_REQ, intent);
             finish();
-            Log.v("MyProfile status", "Result sent");
 
             return true;
         }
 
         return super.onKeyDown(keyCode, event);
     }
+
+
 
 }

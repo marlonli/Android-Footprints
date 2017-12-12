@@ -166,7 +166,7 @@ public class JournalFragment extends Fragment {
         // Initialization
         journals = new ArrayList<>();
         addTestData();
-        Collections.sort(journals, new JournalsComparator());
+//        Collections.sort(journals, new JournalsComparator());
 
 //        lv = v.findViewById(R.id.listview_journals);
 //        madapter = new MyJournalViewAdapter(getActivity(), journals);
@@ -398,7 +398,7 @@ public class JournalFragment extends Fragment {
 
     public void openEditor(int journalIndex) {
         Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
-        if (journalIndex != -1)
+        if (journalIndex != NEW_JOURNAL)
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);
     }

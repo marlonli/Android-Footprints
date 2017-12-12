@@ -41,6 +41,7 @@
         style="@style/ListFont.Title"
         android:background="@android:color/transparent"
         android:maxLines="1"
+        android:maxLength="15"
         android:id="@+id/editText_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />

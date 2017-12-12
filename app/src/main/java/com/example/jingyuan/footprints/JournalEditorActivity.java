@@ -82,7 +82,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             @Override
             public void onClick(View view){
                 getCurrentLocation();
-                ShowMap();
+//                ShowMap();
             }
         });
 
@@ -177,15 +177,15 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
     }
 
-    private void ShowMap(){
-        Intent intent = new Intent();
-        intent.setClass(JournalEditorActivity.this, MapsActivity.class);
-
-        intent.putExtra("latitude", currentLatitude);
-        intent.putExtra("longitude", currentLongitude);
-
-        startActivity(intent);
-    }
+//    private void ShowMap(){
+//        Intent intent = new Intent();
+//        intent.setClass(JournalEditorActivity.this, MapsActivity.class);
+//
+//        intent.putExtra("latitude", currentLatitude);
+//        intent.putExtra("longitude", currentLongitude);
+//
+//        startActivity(intent);
+//    }
 
     private void getCurrentLocation() {
         if (!checkPermissionsforcoarse()) {

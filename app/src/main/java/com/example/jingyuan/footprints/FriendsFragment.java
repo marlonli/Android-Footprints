@@ -248,12 +248,17 @@ public class FriendsFragment extends Fragment {
             } else if (resultCode == OPEN_PROFILE_REQ) {
                 // Change username or profile
                 User u = (User) data.getSerializableExtra(PERSON_OBJECT);
-                // TODO: modify my profile if changed
-                // set my profile
-//                User me = friends.get(0);
+                int position = data.getIntExtra(PERSON_POSITION, 0);
+                Log.v("FrendsFragment status", "position: " + position);
+                if (position == 0) {
+                    // set my profile and user name
+                    User me = friends.get(0);
 //                me.setProfile(u.getProfile());
-//                me.setUsername(u.getUsername());
-//                mRecyclerView.notify
+                    Log.v("FrendsFragment status", "username: " + u.getUsername());
+                    me.setUsername(u.getUsername());
+                    mAdapter.notifyDataSetChanged();
+                }
+
             }
         }
     }
