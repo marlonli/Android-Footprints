@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -37,6 +39,7 @@ import com.wyh.slideAdapter.ItemBind;
 import com.wyh.slideAdapter.ItemView;
 import com.wyh.slideAdapter.SlideAdapter;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -75,7 +78,7 @@ public class JournalFragment extends Fragment {
     MyJournalRecyclerViewAdapter mAdapter;
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
-
+    private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
 
@@ -158,6 +161,8 @@ public class JournalFragment extends Fragment {
         // Set action bar menu
 //        setHasOptionsMenu(true);
 
+        fab = getActivity().findViewById(R.id.fab_newjournal);
+
         // Initialization
         journals = new ArrayList<>();
         addTestData();
@@ -174,6 +179,15 @@ public class JournalFragment extends Fragment {
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(),
                 LinearLayout.VERTICAL));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener(){
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy){
+                if (dy > 0)
+                    fab.hide();
+                else if (dy < 0)
+                    fab.show();
+            }
+        });
         // notifyItemInserted(position)  notifyItemRemoved(position)
 
         // specify an adapter
@@ -192,8 +206,8 @@ public class JournalFragment extends Fragment {
                             }
                         });
                 itemView.setText(R.id.list_content, j.getContent());
-                // TODO: lat lng to address
-                itemView.setText(R.id.list_location, j.getLat() + j.getLng());
+                String loc = latLngToLoc(j.getLat(), j.getLng());
+                itemView.setText(R.id.list_location, loc);
                 String tags = journals.get(position).getTags().toString();
                 itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
@@ -250,9 +264,9 @@ public class JournalFragment extends Fragment {
         testTags.add("tag3");
         journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
         journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("OMG OMG", testTags, startDate1, "20", "-75", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journals.add(new Journal("OMG OMG", testTags, startDate1, "40", "-74", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-        journals.add(new Journal("Journal1", testTags, currentTime, "40", "-78", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "30", "-70", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
 
 
     }
@@ -261,6 +275,12 @@ public class JournalFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openEditor(NEW_JOURNAL);
+            }
+        });
 
 
 //        mAdapter.setOnItemClickListener(new MyJournalRecyclerViewAdapter.OnItemClickListener(){
@@ -364,14 +384,13 @@ public class JournalFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.v("fragment contact status", "onActivityResult");
+        Log.v("fragment status", "onActivityResult");
         if (requestCode == Activity.RESULT_FIRST_USER && data != null) {
-
             if (resultCode == JOURNAL_EDITOR_REQ) {
                 Journal j = (Journal) data.getSerializableExtra(JOURNAL_OBJECT);
 
                 // TODO: write to  database to modify journal list
-
+                // notifyItemInserted(position)  notifyItemRemoved(position)
 //                mdapter.notifyDataSetChanged();
             }
         }
@@ -382,5 +401,37 @@ public class JournalFragment extends Fragment {
         if (journalIndex != -1)
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);
+    }
+
+    public String latLngToLoc(String lat, String lng) {
+        String loc = null;
+        if (lat == null || lng == null)
+            return loc;
+
+        double myLat = Double.valueOf(lat);
+        double myLng = Double.valueOf(lng);
+        Geocoder geocoder = new Geocoder(getActivity());
+        List<Address> addresses = new ArrayList<>();
+        // Get and show address
+        try {
+
+            addresses.addAll(geocoder.getFromLocation(myLat, myLng, 1));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        if (addresses!= null && addresses.size() != 0) {
+            Address address = addresses.get(0);
+            StringBuilder sb = new StringBuilder();
+            if (address.getSubThoroughfare() != null) sb.append(address.getSubThoroughfare()).append(", ");
+            if (address.getThoroughfare() != null) sb.append(address.getThoroughfare()).append(", ");
+            if (address.getLocality() != null) sb.append(address.getLocality()).append(", ");
+            if (address.getAdminArea() != null) sb.append(address.getAdminArea()).append(" ");
+            if (address.getPostalCode() != null) sb.append(address.getPostalCode());
+            loc = sb.toString();
+        }
+        return loc;
     }
 }

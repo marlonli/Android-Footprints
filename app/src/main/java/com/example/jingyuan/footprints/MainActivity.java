@@ -40,18 +40,13 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
             switch (item.getItemId()) {
                 case R.id.navigation_home:{
                     fab.show();
+                    getSupportActionBar().show();
                     showJournalList();
-//                    fab.setOnClickListener(new View.OnClickListener() {
-//                        @Override
-//                        public void onClick(View view) {
-//                            Fragment jf = (JournalFragment) getFragmentManager().findFragmentById(R.id.recyclerView_journals);
-//
-//                        }
-//                    });
                     return true;
                 }
                 case R.id.navigation_album: {
                     fab.hide();
+                    getSupportActionBar().hide();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, AlbumFragment.newInstance(para1, para2), "Album").addToBackStack(null).commit();
@@ -59,13 +54,15 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
                 }
                 case R.id.navigation_maps:{
                     fab.hide();
+                    getSupportActionBar().hide();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, MapsFragment.newInstance(para1, para2), "Maps").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_people:
-                    fab.show();
+                    fab.hide();
+                    getSupportActionBar().show();
                     String para1 = "para1";
                     String para2 = "para2";
                     getFragmentManager().beginTransaction().replace(R.id.fragment_container, FriendsFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();

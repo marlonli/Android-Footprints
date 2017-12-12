@@ -16,6 +16,9 @@ import java.util.List;
 
 public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRecyclerViewAdapter.ViewHolder> {
     private List<User> friends;
+    // view types
+    private static final int TYPE_HEADER = 2;
+    private static final int TYPE_ITEM = 1;
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -44,9 +47,17 @@ public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRe
     @Override
     public MyFriendRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                                       int viewType) {
-        // create a new view
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.friend_list, parent, false);
+        Context context = parent.getContext();
+        View v = null;
+
+        // View type: item
+        if (viewType == TYPE_ITEM) {
+            v = LayoutInflater.from(context).inflate(R.layout.friend_list, parent, false);
+        } else if (viewType == TYPE_HEADER) {
+            // Header
+            v = LayoutInflater.from(context).inflate(R.layout.friend_list_header, parent, false);
+        }
+
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -67,8 +78,7 @@ public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRe
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(MyFriendRecyclerViewAdapter.ViewHolder holder, int position) {
-        // - get element from your dataset at this position
-        // - replace the contents of the view with that element
+
         holder.username.setText(friends.get(position).getUsername());
         if (friends.get(position).getProfile() != null)
             holder.profile.setImageBitmap(friends.get(position).getProfile());
@@ -87,5 +97,19 @@ public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRe
     @Override
     public int getItemCount() {
         return friends.size();
+    }
+
+    // Get item view type according to the position
+    @Override
+    public int getItemViewType(int position) {
+        if (isPositionHeader(position)) {
+            return TYPE_HEADER;
+        }
+        return TYPE_ITEM;
+    }
+
+    // Check if given position is a header
+    private boolean isPositionHeader(int position) {
+        return position == 0;
     }
 }

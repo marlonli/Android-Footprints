@@ -3,15 +3,20 @@ package com.example.jingyuan.footprints;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.MergeCursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Created by jingyuan on 12/6/17.
@@ -63,4 +68,6 @@ public class Utilities {
 
         return cursor.getCount()+" Photos";
     }
+
+
 }

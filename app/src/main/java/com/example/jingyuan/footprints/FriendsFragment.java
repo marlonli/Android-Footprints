@@ -1,15 +1,23 @@
 package com.example.jingyuan.footprints;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -37,15 +45,20 @@ public class FriendsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final int SEARCH_FOR_FRIENDS_REQ = 1;
+    private static final String NEW_FRIEND = "new_friend";
+    private static final String PERSON_OBJECT = "person";
+    private static final int OPEN_PROFILE_REQ = 2;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
     public List<User> friends = new ArrayList<>();
 
-    MyFriendRecyclerViewAdapter mAdapter;
-    RecyclerView mRecyclerView;
-    RecyclerView.LayoutManager mLayoutManager;
+    private MyFriendRecyclerViewAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
+//    private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
 
@@ -92,6 +105,8 @@ public class FriendsFragment extends Fragment {
         // Set action bar menu
         setHasOptionsMenu(true);
 
+//        fab = getActivity().findViewById(R.id.fab_newjournal);
+
         // Initialization
         friends = new ArrayList<>();
         addTestData();
@@ -107,6 +122,15 @@ public class FriendsFragment extends Fragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mAdapter = new MyFriendRecyclerViewAdapter(friends);
         mRecyclerView.setAdapter(mAdapter);
+//        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener(){
+//            @Override
+//            public void onScrolled(RecyclerView recyclerView, int dx, int dy){
+//                if (dy > 0)
+//                    fab.hide();
+//                else if (dy < 0)
+//                    fab.show();
+//            }
+//        });
 
         return v;
     }
@@ -138,6 +162,63 @@ public class FriendsFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//
+//            }
+//        });
+
+        // Click item to open profile
+        mAdapter.setOnItemClickListener(new MyFriendRecyclerViewAdapter.OnItemClickListener(){
+            @Override
+            public void onItemClick(View view , int position){
+                openProfile(position);
+
+            }
+        });
+    }
+
+    private void openProfile(int position) {
+        Intent intent = new Intent(getActivity(), MyProfileActivity.class);
+        intent.putExtra(PERSON_OBJECT, friends.get(position));
+        startActivityForResult(intent, OPEN_PROFILE_REQ);
+    }
+
+    // Add menu to action bar
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_friends, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_add_person:
+                // User chose the "add" item
+                // TODO: search friends
+                searchFriends();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    private void searchFriends() {
+        Intent intent = new Intent(getActivity(), SearchFriendsActivity.class);
+//        intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+        startActivityForResult(intent, SEARCH_FOR_FRIENDS_REQ);
+    }
+
+    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
@@ -145,6 +226,22 @@ public class FriendsFragment extends Fragment {
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.v("fragment status", "onActivityResult");
+        if (requestCode == Activity.RESULT_FIRST_USER && data != null) {
+            if (resultCode == SEARCH_FOR_FRIENDS_REQ) {
+                User u = (User) data.getSerializableExtra(NEW_FRIEND);
+                // TODO: write to  database to modify friends list
+
+//                mdapter.notifyDataSetChanged();
+            } else if (resultCode == OPEN_PROFILE_REQ) {
+                User u = (User) data.getSerializableExtra(PERSON_OBJECT);
+                // TODO: modify my profile if changed
+            }
         }
     }
 
