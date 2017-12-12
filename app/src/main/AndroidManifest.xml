@@ -47,6 +47,9 @@
         <activity android:name=".AlbumActivity" />
         <activity android:name=".MyProfileActivity" />
         <activity android:name=".SearchFriendsActivity"></activity>
+        <activity
+            android:name=".MapsActivity"
+            android:label="@string/title_activity_maps"></activity>
     </application>
 
 </manifest>

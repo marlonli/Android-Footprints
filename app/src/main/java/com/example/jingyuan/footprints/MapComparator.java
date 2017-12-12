@@ -6,6 +6,7 @@ import java.util.HashMap;
 /**
  * Created by jingyuan on 12/6/17.
  */
+// For journal list sorting
 
 public class MapComparator implements Comparator<HashMap<String, String>> {
     private final String key;

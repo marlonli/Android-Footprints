@@ -9,7 +9,7 @@
     <EditText
         style="@style/ListFont"
         android:id="@+id/editText_content"
-        android:hint="content"
+        android:hint="Write down some interesting things..."
         android:layout_margin="@dimen/activity_vertical_margin"
         android:layout_width="0dp"
         android:layout_weight="1"
