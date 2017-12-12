@@ -3,6 +3,7 @@ package com.example.jingyuan.footprints;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -47,7 +48,10 @@ public class FriendsFragment extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     private static final int SEARCH_FOR_FRIENDS_REQ = 1;
     private static final String NEW_FRIEND = "new_friend";
+    private static final String MY_USERNAME = "username";
+    private static final String MY_PROFILE = "profile";
     private static final String PERSON_OBJECT = "person";
+    private static final String PERSON_POSITION = "position";
     private static final int OPEN_PROFILE_REQ = 2;
 
     // TODO: Rename and change types of parameters
@@ -185,6 +189,8 @@ public class FriendsFragment extends Fragment {
     private void openProfile(int position) {
         Intent intent = new Intent(getActivity(), MyProfileActivity.class);
         intent.putExtra(PERSON_OBJECT, friends.get(position));
+        intent.putExtra(PERSON_POSITION, position);
+
         startActivityForResult(intent, OPEN_PROFILE_REQ);
     }
 
@@ -234,13 +240,20 @@ public class FriendsFragment extends Fragment {
         Log.v("fragment status", "onActivityResult");
         if (requestCode == Activity.RESULT_FIRST_USER && data != null) {
             if (resultCode == SEARCH_FOR_FRIENDS_REQ) {
+                // Add a new friend
                 User u = (User) data.getSerializableExtra(NEW_FRIEND);
                 // TODO: write to  database to modify friends list
 
 //                mdapter.notifyDataSetChanged();
             } else if (resultCode == OPEN_PROFILE_REQ) {
+                // Change username or profile
                 User u = (User) data.getSerializableExtra(PERSON_OBJECT);
                 // TODO: modify my profile if changed
+                // set my profile
+//                User me = friends.get(0);
+//                me.setProfile(u.getProfile());
+//                me.setUsername(u.getUsername());
+//                mRecyclerView.notify
             }
         }
     }
