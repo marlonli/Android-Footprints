@@ -29,9 +29,16 @@ import android.widget.Toast;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class JournalEditorActivity extends AppCompatActivity {
 
@@ -58,6 +65,8 @@ public class JournalEditorActivity extends AppCompatActivity {
     //Latitude and Longitude of current location
     private double currentLatitude;
     private double currentLongitude;
+
+    String date_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +124,10 @@ public class JournalEditorActivity extends AppCompatActivity {
         // Format: Sat Dec 02 19:19:45 EST 2017
         String[] date = Calendar.getInstance().getTime().toString().split(" ");
         et_date = (EditText) findViewById(R.id.editText_date);
-        et_date.setText(date[0] + ", " + date[1] + " " + date[2] + ", " + date[5]);
+        date_string = date[0] + ", " + date[1] + " " + date[2] + ", " + date[5];
+        et_date.setText(date_string);
+
+        final long current_time_long =  System.currentTimeMillis();
 
         // Set save button and image button
         // TODO: set image button add photo
@@ -124,7 +136,51 @@ public class JournalEditorActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO: set return value (save to database)
 
-                //save data here:
+                // If it is a null journal
+                if (journal==null){
+                    // Set journal class
+                    String debug1 = et_title.getText().toString();
+//                    journal.setTitle(debug1);
+//                    journal.setContent(et_content.getText().toString());
+//                    journal.setDateTime(current_time_long);
+//                    journal.setLat(currentLatitude+"");
+//                    journal.setLng(currentLongitude+"");
+//
+                    journal = new Journal(debug1, null,current_time_long,
+                    currentLatitude+"",currentLongitude+"", et_content.getText().toString());
+
+                    // Save the new journal in the database.
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference Users = database.getReference("Users");
+                    String key = Users.child("journal").push().getKey();
+                    Users.child("journal").child(key).setValue(journal);
+                }
+                else{
+                    //save data here:
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    final DatabaseReference Users = database.getReference("Users");
+                    Users.child("journal").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snap:dataSnapshot.getChildren()){
+                                String key = snap.getKey();
+                                String title_tmp = (String) snap.child("title").getValue();
+                                if (title_tmp.equals(journal.getTitle())){
+                                    Map<String,Object> UP = new HashMap<>();
+                                    UP.put("/Users/journal/"+key,journal);
+                                    Users.updateChildren(UP);
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+//                Users.child("journal").push().setValue(journal.getContent());
 
 
 //                Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
