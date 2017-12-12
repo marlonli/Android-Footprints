@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Android-Footprints.iml" filepath="$PROJECT_DIR$/Android-Footprints.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Android-Footprints.iml" filepath="$PROJECT_DIR$/Android-Footprints.iml" />
       <module fileurl="file://D:\WorkSpace\AndroidStudioProjects\Android-Footprints\Footprints.iml" filepath="D:\WorkSpace\AndroidStudioProjects\Android-Footprints\Footprints.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -35,4 +35,6 @@ dependencies {
     compile 'com.github.yhaolpz:SlideAdapter:1.0.0'
     compile 'com.google.android.gms:play-services-maps:11.0.4'
     testCompile 'junit:junit:4.12'
+
+    implementation 'com.google.android.gms:play-services-location:11.6.0'
 }
