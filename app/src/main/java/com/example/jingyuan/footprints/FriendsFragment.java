@@ -254,7 +254,6 @@ public class FriendsFragment extends Fragment {
                     me.setUsername(u.getUsername());
                     mAdapter.notifyDataSetChanged();
                 }
-
             }
         }
     }

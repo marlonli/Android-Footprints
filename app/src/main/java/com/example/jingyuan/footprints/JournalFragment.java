@@ -35,6 +35,11 @@ import com.baoyz.swipemenulistview.SwipeMenuCreator;
 import com.baoyz.swipemenulistview.SwipeMenuItem;
 import com.baoyz.swipemenulistview.SwipeMenuLayout;
 import com.baoyz.swipemenulistview.SwipeMenuListView;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.wyh.slideAdapter.ItemBind;
 import com.wyh.slideAdapter.ItemView;
 import com.wyh.slideAdapter.SlideAdapter;
@@ -70,7 +75,7 @@ public class JournalFragment extends Fragment {
     private static final String EDITOR_MODE = "mode";
     private static final int EDIT = 10;
 
-    private String username;
+    public String username;
 //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
 //    MyJournalViewAdapter madapter;
@@ -212,6 +217,29 @@ public class JournalFragment extends Fragment {
                     public void onClick(View view) {
                         // onClick delete
                         Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
+
+                        // Delete the corresponding journal from the database.
+                        FirebaseDatabase database = FirebaseDatabase.getInstance();
+                        final DatabaseReference Users = database.getReference("New_users");
+                        DatabaseReference journal_listener = Users.child(username).child("journal_list");
+                        journal_listener.addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot snap:dataSnapshot.getChildren()){
+                                    String key_title = snap.getKey();
+                                    String real_title = journals.get(position).getTitle();
+                                    if (key_title.equals(real_title)){
+                                        Users.child(username).child("journal_list").child(key_title).removeValue();
+                                        break;
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
                 });
 //                        .setOnClickListener(R.id.textView, new View.OnClickListener() {
@@ -396,6 +424,7 @@ public class JournalFragment extends Fragment {
         intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL)
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+            intent.putExtra("username",username);
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);
     }
 
