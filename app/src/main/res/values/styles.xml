@@ -23,6 +23,11 @@
         <item name="titleTextAppearance">@style/AppTheme.ActionBar.TitleTextStyle</item>
     </style>
 
+    <style name="AppTheme.Button" parent="Widget.AppCompat.Button.Colored">
+        <item name="colorButtonNormal">@color/colorPrimary</item>
+        <item name="android:textColor">@color/white</item>
+    </style>
+
 
     <!--Fonts style-->
     <style name="AppTheme.ActionBar.TitleTextStyle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
@@ -31,6 +36,7 @@
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
+
 
     <style name="DateFont">
         <item name="android:textSize">@dimen/text_size_title</item>

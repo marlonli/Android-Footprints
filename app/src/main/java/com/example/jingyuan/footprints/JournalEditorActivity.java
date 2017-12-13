@@ -48,6 +48,9 @@ public class JournalEditorActivity extends AppCompatActivity {
     private static final int JOURNAL_EDITOR_REQ = 1;
     private static final int IMAGE = 79;
     private static final int REQ_CODE_TAKE_PICTURE = 90210;
+    private static final String EDITOR_MODE = "mode";
+    private static final int EDIT = 10;
+    private static final int READ = 11;
     private Journal journal;
     private EditText et_title;
     private EditText et_content;
@@ -85,6 +88,8 @@ public class JournalEditorActivity extends AppCompatActivity {
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
         }
+
+        // Set edit mode or read mode
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {

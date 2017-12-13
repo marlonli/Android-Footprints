@@ -46,13 +46,14 @@ public class FriendsFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
-    private static final int SEARCH_FOR_FRIENDS_REQ = 1;
     private static final String NEW_FRIEND = "new_friend";
     private static final String MY_USERNAME = "username";
     private static final String MY_PROFILE = "profile";
     private static final String PERSON_OBJECT = "person";
     private static final String PERSON_POSITION = "position";
+    private static final int SEARCH_FOR_FRIENDS_REQ = 1;
     private static final int OPEN_PROFILE_REQ = 2;
+    private static final int FRIENDS_FRAGMENT_REQ = 1000;
 
     private String username;
     public List<User> friends = new ArrayList<>();
@@ -186,7 +187,7 @@ public class FriendsFragment extends Fragment {
         intent.putExtra(PERSON_OBJECT, friends.get(position));
         intent.putExtra(PERSON_POSITION, position);
 
-        startActivityForResult(intent, OPEN_PROFILE_REQ);
+        startActivityForResult(intent, FRIENDS_FRAGMENT_REQ);
     }
 
     // Add menu to action bar
@@ -216,7 +217,7 @@ public class FriendsFragment extends Fragment {
     private void searchFriends() {
         Intent intent = new Intent(getActivity(), SearchFriendsActivity.class);
 //        intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
-        startActivityForResult(intent, SEARCH_FOR_FRIENDS_REQ);
+        startActivityForResult(intent, FRIENDS_FRAGMENT_REQ);
     }
 
     @Override
@@ -232,8 +233,8 @@ public class FriendsFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.v("fragment status", "onActivityResult");
-        if (requestCode == Activity.RESULT_FIRST_USER && data != null) {
+        Log.v("FriendsFragment status", "onActivityResult");
+        if (requestCode == FRIENDS_FRAGMENT_REQ && data != null) {
             if (resultCode == SEARCH_FOR_FRIENDS_REQ) {
                 // Add a new friend
                 User u = (User) data.getSerializableExtra(NEW_FRIEND);

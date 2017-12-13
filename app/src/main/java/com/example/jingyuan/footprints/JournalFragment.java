@@ -67,6 +67,8 @@ public class JournalFragment extends Fragment {
     private static final String JOURNAL_OBJECT = "journalObj";
     private static final int JOURNAL_EDITOR_REQ = 1;
     private static final int NEW_JOURNAL = -1;
+    private static final String EDITOR_MODE = "mode";
+    private static final int EDIT = 10;
 
     private String username;
 //    private SwipeMenuListView lv;
@@ -391,6 +393,7 @@ public class JournalFragment extends Fragment {
 
     public void openEditor(int journalIndex) {
         Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
+        intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL)
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);
