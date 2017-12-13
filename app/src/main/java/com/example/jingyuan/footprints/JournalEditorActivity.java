@@ -35,6 +35,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,6 +68,10 @@ public class JournalEditorActivity extends AppCompatActivity {
     private double currentLongitude;
 
     String date_string;
+    String username;
+
+    public ArrayList<String> tags;
+    public ArrayList<Bitmap> photos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +84,8 @@ public class JournalEditorActivity extends AppCompatActivity {
         // Get intent
         Intent intent = getIntent();
         journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
+        username = (String) intent.getStringExtra("username");
+
         // TODO: edit journal if j != null
         Log.v("Journal Editor", "journal: " + journal);
         if (journal != null) {
@@ -136,38 +143,34 @@ public class JournalEditorActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO: set return value (save to database)
 
+                // Test user name.
+                username = "User1";
+
                 // If it is a null journal
                 if (journal==null){
+
                     // Set journal class
-                    String debug1 = et_title.getText().toString();
-//                    journal.setTitle(debug1);
-//                    journal.setContent(et_content.getText().toString());
-//                    journal.setDateTime(current_time_long);
-//                    journal.setLat(currentLatitude+"");
-//                    journal.setLng(currentLongitude+"");
-//
-                    journal = new Journal(debug1, null,current_time_long,
+                    journal = new Journal(et_title.getText().toString(), null,current_time_long,
                     currentLatitude+"",currentLongitude+"", et_content.getText().toString());
 
                     // Save the new journal in the database.
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference Users = database.getReference("Users");
-                    String key = Users.child("journal").push().getKey();
-                    Users.child("journal").child(key).setValue(journal);
+                    DatabaseReference Users = database.getReference("New_users");
+                    Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
                 }
                 else{
                     //save data here:
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    final DatabaseReference Users = database.getReference("Users");
-                    Users.child("journal").addValueEventListener(new ValueEventListener() {
+                    final DatabaseReference Users = database.getReference("New_users");
+                    DatabaseReference AAA = Users.child(username).child("journal_list");
+                    Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
-                                String key = snap.getKey();
-                                String title_tmp = (String) snap.child("title").getValue();
-                                if (title_tmp.equals(journal.getTitle())){
+                                String key_title = snap.getKey();
+                                if (key_title.equals("aaaaa")){
                                     Map<String,Object> UP = new HashMap<>();
-                                    UP.put("/Users/journal/"+key,journal);
+                                    UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
                                 }
                             }
