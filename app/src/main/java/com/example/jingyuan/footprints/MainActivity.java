@@ -25,7 +25,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import static java.security.AccessController.getContext;
 
-public class MainActivity extends AppCompatActivity implements AlbumFragment.OnFragmentInteractionListener, JournalFragment.OnFragmentInteractionListener, MapsFragment.OnFragmentInteractionListener, FriendsFragment.OnFragmentInteractionListener{
+public class MainActivity extends AppCompatActivity implements AlbumFragment.OnFragmentInteractionListener, JournalFragment.OnFragmentInteractionListener, MapsFragment.OnFragmentInteractionListener, FriendsFragment.OnFragmentInteractionListener, LoginFragment.OnFragmentInteractionListener{
 
     private static final int NEW_JOURNAL = -1;
     Toolbar myToolbar;
@@ -85,7 +85,14 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
         layoutParams.setBehavior(new BottomNavigationViewBehavior());
 
         // Set journal list fragment
-        showJournalList(username);
+        //showJournalList(username);
+
+        // make navigation and fab invisible for LoginFragment
+        navigation.setVisibility(View.GONE);
+        fab.setVisibility(View.GONE);
+
+        // always show LoginFragment when the app is opened
+        showLogin();
     }
 
     @Override
@@ -96,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
     public void showJournalList(String username) {
         String para1 = username;
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(para1), "Journal").addToBackStack(null).commit();
+    }
+
+    public void showLogin() {
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, LoginFragment.newInstance(), "Login").addToBackStack(null).commit();
     }
 
     public void getPermission() {

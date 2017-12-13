@@ -16,6 +16,10 @@
     <string name="action_add_person">Add Person</string>
     <string name="search_title">Search</string>
     <string name="search_hint">username</string>
+    <string name="username_hint">Username</string>
+    <string name="password_hint">Password</string>
+    <string name="signin_button">Sign In</string>
+    <string name="signup_button">Sign Up</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

@@ -95,8 +95,8 @@ public class JournalEditorActivity extends AppCompatActivity {
     private String mAddressOutput;
     private SimpleAdapter simp_adapter;
 
-    private List<String> tags;  //list_Of_Tags;
-    private List<Bitmap> photos;    //list_Of_Images;
+    private ArrayList<String> tags;  //list_Of_Tags;
+    private ArrayList<Bitmap> photos;    //list_Of_Images;
     private List<String> list_Of_Num;
     private List<Map<String, Object>> list_Of_Map;
 
@@ -213,8 +213,10 @@ public class JournalEditorActivity extends AppCompatActivity {
                 if (journal==null){
 
                     // Set journal class
-                    journal = new Journal(et_title.getText().toString(), null,current_time_long,
+                    journal = new Journal(et_title.getText().toString(), tags,current_time_long,
                     currentLatitude+"",currentLongitude+"", et_content.getText().toString());
+
+                    journal.setPhotos(photos);
 
                     // Save the new journal in the database.
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -222,10 +224,14 @@ public class JournalEditorActivity extends AppCompatActivity {
                     Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
                 }
                 else{
+                    // Update the new journal
+                    journal.setPhotos(photos);
+                    journal.setTags(tags);
+
                     //save data here:
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     final DatabaseReference Users = database.getReference("New_users");
-                    DatabaseReference AAA = Users.child(username).child("journal_list");
+//                    DatabaseReference AAA = Users.child(username).child("journal_list");
                     Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {

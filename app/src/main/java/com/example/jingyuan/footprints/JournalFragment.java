@@ -165,7 +165,8 @@ public class JournalFragment extends Fragment {
 
         // Initialization
         journals = new ArrayList<>();
-        addTestData();
+        read_data_from_database();
+//        addTestData();
 //        Collections.sort(journals, new JournalsComparator());
 
 //        lv = v.findViewById(R.id.listview_journals);
@@ -261,6 +262,37 @@ public class JournalFragment extends Fragment {
 //        itemTouchhelper.attachToRecyclerView(mRecyclerView);
 
         return v;
+    }
+
+    private void read_data_from_database(){
+        username = "User1";
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference Users = database.getReference("New_users");
+        DatabaseReference aaa = Users.child("User1");
+        DatabaseReference bbb = aaa.child("journal_list");
+        bbb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snap:dataSnapshot.getChildren()){
+                    String key = snap.getKey();
+                    String title = (String) snap.child("title").getValue();
+                    String content = (String) snap.child("content").getValue();
+                    long dateTimeLong = (long) snap.child("dateTimeLong").getValue();
+                    String dateTimeString = (String) snap.child("dateTimeString").getValue();
+                    String lat = (String) snap.child("lat").getValue();
+                    String lng = (String) snap.child("lng").getValue();
+                    ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
+
+                    Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
+                    journals.add(journal);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void addTestData() {
