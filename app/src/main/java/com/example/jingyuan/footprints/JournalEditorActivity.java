@@ -47,8 +47,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
 
+import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -63,7 +63,12 @@ public class JournalEditorActivity extends AppCompatActivity {
     private static final String JOURNAL_OBJECT = "journalObj";
     private static final int JOURNAL_EDITOR_REQ = 1;
     private static final int IMAGE = 79;
+
     private static final int REQ_CODE_TAKE_PICTURE = 33556;
+    private static final String EDITOR_MODE = "mode";
+    private static final int EDIT = 10;
+    private static final int READ = 11;
+
     private Journal journal;
     private EditText et_title;
     private EditText et_content;
@@ -86,13 +91,16 @@ public class JournalEditorActivity extends AppCompatActivity {
     private double currentLongitude;
 
     String date_string;
+
     private String mAddressOutput;
     private SimpleAdapter simp_adapter;
 
-    private List<String> list_Of_Tags;
-    private List<Bitmap> list_Of_Images;
+    private List<String> tags;  //list_Of_Tags;
+    private List<Bitmap> photos;    //list_Of_Images;
     private List<String> list_Of_Num;
     private List<Map<String, Object>> list_Of_Map;
+
+    String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,12 +113,16 @@ public class JournalEditorActivity extends AppCompatActivity {
         // Get intent
         Intent intent = getIntent();
         journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
+        username = (String) intent.getStringExtra("username");
+
         // TODO: edit journal if j != null
         Log.v("Journal Editor", "journal: " + journal);
         if (journal != null) {
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
         }
+
+        // Set edit mode or read mode
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -128,7 +140,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
-                if(list_Of_Tags.size() != 0) {
+                if(tags.size() != 0) {
                     simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
                             new String[]{"index", "tag"}, new int[]{
                             R.id.listcontent_index, R.id.listcontent_content});
@@ -144,16 +156,16 @@ public class JournalEditorActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialog,
                                                         int which) {
                                         String newtag = edit.getText().toString();
-                                        list_Of_Tags.add(newtag);
-                                        int size = list_Of_Tags.size();
+                                        tags.add(newtag);
+                                        int size = tags.size();
                                         String str_size = Integer.toString(size)+".";
                                         Log.i("fdsd",str_size);
                                         list_Of_Num.add(str_size);
                                         list_Of_Map.clear();
-                                        for (int i = 0; i < list_Of_Tags.size(); i++) {
+                                        for (int i = 0; i < tags.size(); i++) {
                                             Map<String, Object> listem = new HashMap<String, Object>();
                                             listem.put("index", list_Of_Num.get(i));
-                                            listem.put("tag", list_Of_Tags.get(i));
+                                            listem.put("tag", tags.get(i));
                                             list_Of_Map.add(listem);
                                         }
                                     }
@@ -194,38 +206,34 @@ public class JournalEditorActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO: set return value (save to database)
 
+                // Test user name.
+                username = "User1";
+
                 // If it is a null journal
                 if (journal==null){
+
                     // Set journal class
-                    String debug1 = et_title.getText().toString();
-//                    journal.setTitle(debug1);
-//                    journal.setContent(et_content.getText().toString());
-//                    journal.setDateTime(current_time_long);
-//                    journal.setLat(currentLatitude+"");
-//                    journal.setLng(currentLongitude+"");
-//
-                    journal = new Journal(debug1, null,current_time_long,
+                    journal = new Journal(et_title.getText().toString(), null,current_time_long,
                     currentLatitude+"",currentLongitude+"", et_content.getText().toString());
 
                     // Save the new journal in the database.
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference Users = database.getReference("Users");
-                    String key = Users.child("journal").push().getKey();
-                    Users.child("journal").child(key).setValue(journal);
+                    DatabaseReference Users = database.getReference("New_users");
+                    Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
                 }
                 else{
                     //save data here:
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    final DatabaseReference Users = database.getReference("Users");
-                    Users.child("journal").addValueEventListener(new ValueEventListener() {
+                    final DatabaseReference Users = database.getReference("New_users");
+                    DatabaseReference AAA = Users.child(username).child("journal_list");
+                    Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
-                                String key = snap.getKey();
-                                String title_tmp = (String) snap.child("title").getValue();
-                                if (title_tmp.equals(journal.getTitle())){
+                                String key_title = snap.getKey();
+                                if (key_title.equals("aaaaa")){
                                     Map<String,Object> UP = new HashMap<>();
-                                    UP.put("/Users/journal/"+key,journal);
+                                    UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
                                 }
                             }
@@ -260,7 +268,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         if (requestCode == REQ_CODE_TAKE_PICTURE
                 && resultCode == RESULT_OK) {
             bmp = (Bitmap) intent.getExtras().get("data");
-            list_Of_Images.add(bmp);
+            photos.add(bmp);
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
@@ -273,7 +281,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 //            saveImage(imagePath);
 //            c.close();
             bmp = (Bitmap) intent.getExtras().get("data");
-            list_Of_Images.add(bmp);
+            photos.add(bmp);
         }
     }
 
@@ -294,8 +302,8 @@ public class JournalEditorActivity extends AppCompatActivity {
         mResultReceiver = new AddressResultReceiver(new Handler());
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
-        list_Of_Images = new ArrayList<>();
-        list_Of_Tags = new ArrayList<>();
+        photos = new ArrayList<>();
+        tags = new ArrayList<>();
         list_Of_Num = new ArrayList<>();
         list_Of_Map = new ArrayList<>();
     }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="@dimen/activity_horizontal_margin"
+    android:background="#FFFFFFFF"
+    android:popupElevation="8dp"
+    android:layout_width="240dp"
+    android:layout_height="120dp">
+
+    <EditText
+        android:id="@+id/editText_username"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="16dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:maxLength="15"
+        android:hint="New name"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:theme="@style/AppTheme.Button"
+        android:id="@+id/button_cancel"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="8dp"
+        android:text="Cancel"
+        app:layout_constraintStart_toStartOf="@+id/editText_username"
+        app:layout_constraintTop_toBottomOf="@+id/editText_username" />
+
+    <Button
+        android:theme="@style/AppTheme.Button"
+        android:id="@+id/button_confirm"
+        android:layout_width="85dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginTop="8dp"
+        android:text="Confirm"
+        app:layout_constraintEnd_toEndOf="@+id/editText_username"
+        app:layout_constraintTop_toBottomOf="@+id/editText_username" />
+</android.support.constraint.ConstraintLayout>
