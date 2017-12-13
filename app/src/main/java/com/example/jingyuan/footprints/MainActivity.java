@@ -31,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
     Toolbar myToolbar;
     private BottomNavigationView navigation;
     private FloatingActionButton fab;
+    private String username;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -41,31 +42,25 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
                 case R.id.navigation_home:{
                     fab.show();
                     getSupportActionBar().show();
-                    showJournalList();
+                    showJournalList(username);
                     return true;
                 }
                 case R.id.navigation_album: {
                     fab.hide();
                     getSupportActionBar().hide();
-                    String para1 = "para1";
-                    String para2 = "para2";
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, AlbumFragment.newInstance(para1, para2), "Album").addToBackStack(null).commit();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, AlbumFragment.newInstance(username), "Album").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_maps:{
                     fab.hide();
                     getSupportActionBar().hide();
-                    String para1 = "para1";
-                    String para2 = "para2";
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, MapsFragment.newInstance(para1, para2), "Maps").addToBackStack(null).commit();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, MapsFragment.newInstance(username), "Maps").addToBackStack(null).commit();
                     return true;
                 }
                 case R.id.navigation_people:
                     fab.hide();
                     getSupportActionBar().show();
-                    String para1 = "para1";
-                    String para2 = "para2";
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, FriendsFragment.newInstance(para1, para2), "People").addToBackStack(null).commit();
+                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, FriendsFragment.newInstance(username), "People").addToBackStack(null).commit();
                     return true;
             }
             return false;
@@ -90,7 +85,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
         layoutParams.setBehavior(new BottomNavigationViewBehavior());
 
         // Set journal list fragment
-        showJournalList();
+        showJournalList(username);
     }
 
     @Override
@@ -98,16 +93,10 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
 
     }
 
-    public void showJournalList() {
-        String para1 = "journal_para1";
-        String para2 = "journal_para2";
-        getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(para1, para2), "Journal").addToBackStack(null).commit();
+    public void showJournalList(String username) {
+        String para1 = username;
+        getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(para1), "Journal").addToBackStack(null).commit();
     }
-
-//    public static int dp2px(int dp) {
-//        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-//                getContext().getResources().getDisplayMetrics());
-//    }
 
     public void getPermission() {
         if (ContextCompat.checkSelfPermission( this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
