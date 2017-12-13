@@ -4,15 +4,21 @@ package com.example.jingyuan.footprints;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.location.Geocoder;
 import android.location.Location;
 import android.media.Image;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.ResultReceiver;
 import android.provider.MediaStore;
+import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -20,14 +26,20 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -35,9 +47,13 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class JournalEditorActivity extends AppCompatActivity {
@@ -47,7 +63,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private static final String JOURNAL_OBJECT = "journalObj";
     private static final int JOURNAL_EDITOR_REQ = 1;
     private static final int IMAGE = 79;
-    private static final int REQ_CODE_TAKE_PICTURE = 90210;
+    private static final int REQ_CODE_TAKE_PICTURE = 33556;
     private Journal journal;
     private EditText et_title;
     private EditText et_content;
@@ -58,15 +74,25 @@ public class JournalEditorActivity extends AppCompatActivity {
     private ImageButton ib_photos;
     private ImageButton ib_camera;
     private Bitmap bmp;
+    private TextView tv_address;
+    private ListView lv_of_tag;
 
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
+    private AddressResultReceiver mResultReceiver;
 
     //Latitude and Longitude of current location
     private double currentLatitude;
     private double currentLongitude;
 
     String date_string;
+    private String mAddressOutput;
+    private SimpleAdapter simp_adapter;
+
+    private List<String> list_Of_Tags;
+    private List<Bitmap> list_Of_Images;
+    private List<String> list_Of_Num;
+    private List<Map<String, Object>> list_Of_Map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +117,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             @Override
             public void onClick(View view){
                 getCurrentLocation();
-//                ShowMap();
+                ShowAddress();
             }
         });
 
@@ -99,7 +125,39 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-
+                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
+                view = factory.inflate(R.layout.tag_window, null);
+                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
+                if(list_Of_Tags.size() != 0) {
+                    simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
+                            new String[]{"index", "tag"}, new int[]{
+                            R.id.listcontent_index, R.id.listcontent_content});
+                    lv_of_tag = view.findViewById(R.id.lv_tags);
+                    lv_of_tag.setAdapter(simp_adapter);
+                }
+                new AlertDialog.Builder(JournalEditorActivity.this)
+                        .setTitle("Tags")     //title
+                        .setView(view)
+                        .setPositiveButton("Save",
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        String newtag = edit.getText().toString();
+                                        list_Of_Tags.add(newtag);
+                                        int size = list_Of_Tags.size();
+                                        String str_size = Integer.toString(size)+".";
+                                        Log.i("fdsd",str_size);
+                                        list_Of_Num.add(str_size);
+                                        list_Of_Map.clear();
+                                        for (int i = 0; i < list_Of_Tags.size(); i++) {
+                                            Map<String, Object> listem = new HashMap<String, Object>();
+                                            listem.put("index", list_Of_Num.get(i));
+                                            listem.put("tag", list_Of_Tags.get(i));
+                                            list_Of_Map.add(listem);
+                                        }
+                                    }
+                                }).setNegativeButton("Cancel", null).create().show();
             }
         });
 
@@ -202,19 +260,20 @@ public class JournalEditorActivity extends AppCompatActivity {
         if (requestCode == REQ_CODE_TAKE_PICTURE
                 && resultCode == RESULT_OK) {
             bmp = (Bitmap) intent.getExtras().get("data");
-            //not finished
-            //bmp should be stored in db
+            list_Of_Images.add(bmp);
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-            Uri selectedImage = intent.getData();
-            String[] filePathColumns = {MediaStore.Images.Media.DATA};
-            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
-            c.moveToFirst();
-            int columnIndex = c.getColumnIndex(filePathColumns[0]);
-            String imagePath = c.getString(columnIndex);
-            saveImage(imagePath);
-            c.close();
+//            Uri selectedImage = intent.getData();
+//            String[] filePathColumns = {MediaStore.Images.Media.DATA};
+//            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
+//            c.moveToFirst();
+//            int columnIndex = c.getColumnIndex(filePathColumns[0]);
+//            String imagePath = c.getString(columnIndex);
+//            saveImage(imagePath);
+//            c.close();
+            bmp = (Bitmap) intent.getExtras().get("data");
+            list_Of_Images.add(bmp);
         }
     }
 
@@ -231,6 +290,14 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
         ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
         ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+        tv_address = (TextView) findViewById(R.id.tv_location);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mAddressOutput = "";
+        list_Of_Images = new ArrayList<>();
+        list_Of_Tags = new ArrayList<>();
+        list_Of_Num = new ArrayList<>();
+        list_Of_Map = new ArrayList<>();
     }
 
 //    private void ShowMap(){
@@ -251,6 +318,52 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
     }
 
+    private void ShowAddress() {
+        if (!checkPermissionsforfine()) {
+            requestPermissionsforfine();
+        } else {
+            getAddress();
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private void getAddress() {
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location == null) {
+                            Log.w(TAG, "onSuccess:null");
+                            return;
+                        }
+                        mLastLocation = location;
+                        // Determine whether a Geocoder is available.
+
+                        startIntentService();
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "getLastLocation:onFailure", e);
+                    }
+                });
+    }
+
+    private void startIntentService() {
+        // Create an intent for passing to the intent service responsible for fetching the address.
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+        // Pass the result receiver as an extra to the service.
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+
+
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
+
+
+        //Log.e("sss", "before startservice");
+        startService(intent);
+    }
+
     @SuppressLint("MissingPermission")
     private void getLastLocation() {
         mFusedLocationClient.getLastLocation()
@@ -269,6 +382,28 @@ public class JournalEditorActivity extends AppCompatActivity {
                 });
     }
 
+    private class AddressResultReceiver extends ResultReceiver {
+        AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        /**
+         *  Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         */
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            Log.e("address", "get address update");
+            // Display the address string or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            displayAddressOutput();
+        }
+    }
+
+    private void displayAddressOutput() {
+        tv_address.setText(mAddressOutput);
+    }
+
     private boolean checkPermissionsforcoarse() {
         int permissionState = ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION);
@@ -276,10 +411,72 @@ public class JournalEditorActivity extends AppCompatActivity {
     }
 
     private void requestPermissionsforcoarse() {
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        if (shouldProvideRationale) {
+            Log.e(TAG, "Displaying permission rationale to provide additional context.");
+
+            showSnackbar(R.string.permission_rationale, android.R.string.ok,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            startLocationPermissionRequestforcoarse();
+                        }
+                    });
+
+        } else {
+            Log.e(TAG, "Requesting permission");
+            startLocationPermissionRequestforcoarse();
+        }
+    }
+
+    private void startLocationPermissionRequestforcoarse() {
         ActivityCompat.requestPermissions(JournalEditorActivity.this,
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
                 REQUEST_PERMISSIONS_REQUEST_CODE);
     }
+
+    private boolean checkPermissionsforfine() {
+        int permissionState = ActivityCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        return permissionState == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestPermissionsforfine() {
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.");
+
+            showSnackbar(R.string.permission_rationale, android.R.string.ok,
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            ActivityCompat.requestPermissions(JournalEditorActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    });
+
+        } else {
+            Log.i(TAG, "Requesting permission");
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            ActivityCompat.requestPermissions(JournalEditorActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
 
     private void showSnackbar(final int mainTextStringId, final int actionStringId,
                               View.OnClickListener listener) {
