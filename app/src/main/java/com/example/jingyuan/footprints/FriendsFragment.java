@@ -1,6 +1,7 @@
 package com.example.jingyuan.footprints;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +15,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -193,32 +195,52 @@ public class FriendsFragment extends Fragment {
     // Add menu to action bar
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_friends, menu);
+        inflater.inflate(R.menu.menu_search, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getActivity().getComponentName()));
+        searchView.setQueryHint("Username");
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Intent intent = new Intent(getActivity(), SearchResultActivity.class);
+                intent.putExtra(SearchManager.QUERY, query);
+                intent.putExtra("username", username);
+                startActivityForResult(intent, FRIENDS_FRAGMENT_REQ);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_add_person:
-                // User chose the "add" item
-                // TODO: search friends
-                searchFriends();
-                return true;
+//    @Override
+//    public boolean onOptionsItemSelected(MenuItem item) {
+//        switch (item.getItemId()) {
+//            case R.id.action_add_person:
+//                // User chose the "add" item
+//                // TODO: search friends
+//                searchFriends();
+//                return true;
+//
+//            default:
+//                // If we got here, the user's action was not recognized.
+//                // Invoke the superclass to handle it.
+//                return super.onOptionsItemSelected(item);
+//
+//        }
+//    }
 
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
-    }
-
-    private void searchFriends() {
-        Intent intent = new Intent(getActivity(), SearchFriendsActivity.class);
-//        intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
-        startActivityForResult(intent, FRIENDS_FRAGMENT_REQ);
-    }
 
     @Override
     public void onAttach(Context context) {

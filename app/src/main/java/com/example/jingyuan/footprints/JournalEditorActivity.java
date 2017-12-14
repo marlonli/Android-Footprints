@@ -25,6 +25,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,6 +92,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private double currentLongitude;
 
     String date_string;
+    boolean editorMode = true;
 
     private String mAddressOutput;
     private SimpleAdapter simp_adapter;
@@ -114,6 +116,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         Intent intent = getIntent();
         journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
         username = (String) intent.getStringExtra("username");
+        editorMode =  (intent.getIntExtra(EDITOR_MODE, 10) == EDIT);
 
         // TODO: edit journal if j != null
         Log.v("Journal Editor", "journal: " + journal);
@@ -123,6 +126,16 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 
         // Set edit mode or read mode
+        if (!editorMode) {
+            et_title.setEnabled(false);
+            et_content.setKeyListener(null);
+            ib_camera.setEnabled(false);
+            ib_location.setEnabled(false);
+            ib_photos.setEnabled(false);
+            ib_save.setEnabled(false);
+            ib_tags.setEnabled(false);
+        }
+//        et_content.setMovementMethod(new ScrollingMovementMethod());
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {

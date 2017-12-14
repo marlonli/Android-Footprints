@@ -1,5 +1,6 @@
 package com.example.jingyuan.footprints;
 
+import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.MergeCursor;
@@ -69,5 +70,36 @@ public class Utilities {
         return cursor.getCount()+" Photos";
     }
 
+    public String latLngToLoc(Activity activity, String lat, String lng) {
+        String loc = null;
+        if (lat == null || lng == null)
+            return loc;
+
+        double myLat = Double.valueOf(lat);
+        double myLng = Double.valueOf(lng);
+        Geocoder geocoder = new Geocoder(activity);
+        List<Address> addresses = new ArrayList<>();
+        // Get and show address
+        try {
+
+            addresses.addAll(geocoder.getFromLocation(myLat, myLng, 1));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        if (addresses!= null && addresses.size() != 0) {
+            Address address = addresses.get(0);
+            StringBuilder sb = new StringBuilder();
+            if (address.getSubThoroughfare() != null) sb.append(address.getSubThoroughfare()).append(", ");
+            if (address.getThoroughfare() != null) sb.append(address.getThoroughfare()).append(", ");
+            if (address.getLocality() != null) sb.append(address.getLocality()).append(", ");
+            if (address.getAdminArea() != null) sb.append(address.getAdminArea()).append(" ");
+            if (address.getPostalCode() != null) sb.append(address.getPostalCode());
+            loc = sb.toString();
+        }
+        return loc;
+    }
 
 }

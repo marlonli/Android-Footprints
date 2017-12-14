@@ -55,9 +55,6 @@ import java.util.List;
 
 
 /**
- * Created by jingyuan on 11/30/17.
- */
-/**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link JournalFragment.OnFragmentInteractionListener} interface
@@ -285,7 +282,7 @@ public class JournalFragment extends Fragment {
         testTags.add("tag1");
         testTags.add("tag2");
         testTags.add("tag3");
-        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", getString(R.string.large_text)));
         journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("OMG OMG", testTags, startDate1, "40", "-74", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
@@ -422,9 +419,10 @@ public class JournalFragment extends Fragment {
     public void openEditor(int journalIndex) {
         Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
         intent.putExtra(EDITOR_MODE, EDIT);
-        if (journalIndex != NEW_JOURNAL)
+        if (journalIndex != NEW_JOURNAL) {
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
-            intent.putExtra("username",username);
+            intent.putExtra("username", username);
+        }
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);
     }
 

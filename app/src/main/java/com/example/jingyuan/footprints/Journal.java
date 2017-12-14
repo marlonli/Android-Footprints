@@ -19,6 +19,7 @@ class Journal implements Serializable {
     private long dateTime;
     private String lat;
     private String lng;
+    private String address;
     private String content;
 
     public ArrayList<Bitmap> getPhotos() {
@@ -62,6 +63,14 @@ class Journal implements Serializable {
         date.setTimeInMillis(dateTime);
         Date dt = date.getTime();
         return dt.toString();
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public void setDateTime(long dateTime) {

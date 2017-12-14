@@ -1,5 +1,7 @@
 package com.example.jingyuan.footprints;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -28,6 +30,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyProfileActivity extends AppCompatActivity {
 
@@ -36,6 +40,9 @@ public class MyProfileActivity extends AppCompatActivity {
     private static final String PERSON_OBJECT = "person";
     private static final String PERSON_POSITION = "position";
     private static final int OPEN_PROFILE_REQ = 2;
+    private static final String EDITOR_MODE = "mode";
+    private static final String JOURNAL_OBJECT = "journalObj";
+    private static final int READ = 11;
     private int position; // if position == 0: my profile
 
     private User user;
@@ -115,10 +122,24 @@ public class MyProfileActivity extends AppCompatActivity {
             }
         });
 
+        // Edit username
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               editNamePopupWindow();
+                LayoutInflater factory = LayoutInflater.from(MyProfileActivity.this);
+                view = factory.inflate(R.layout.popup_edit_username, null);
+                final EditText newName = (EditText) view.findViewById(R.id.editText_username);
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Edit Username")     //title
+                        .setView(view)
+                        .setPositiveButton("Confirm",
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        myUsername.setText(newName.getText().toString());
+                                    }
+                                }).setNegativeButton("Cancel", null).create().show();
             }
         });
 
@@ -126,9 +147,18 @@ public class MyProfileActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 // TODO: view journal
+                openEditor(i);
             }
         });
 
+    }
+
+    public void openEditor(int journalIndex) {
+        Intent intent = new Intent(this, JournalEditorActivity.class);
+        intent.putExtra(EDITOR_MODE, READ);
+        intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+        intent.putExtra("username",myUsername.getText().toString());
+        startActivity(intent);
     }
 
     private void addTestData() {
@@ -153,46 +183,11 @@ public class MyProfileActivity extends AppCompatActivity {
         testTags.add("tag1");
         testTags.add("tag2");
         testTags.add("tag3");
-        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", getString(R.string.large_text)));
         journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("OMG OMG", testTags, startDate1, "40", "-74", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
         journals.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
         journals.add(new Journal("Journal1", testTags, currentTime, "30", "-70", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-
-    }
-
-    private void editNamePopupWindow() {
-
-            View contentView = LayoutInflater.from(this).inflate(R.layout.popup_edit_username, null);
-
-            // Set popup buttons
-            Button cancel = (Button) contentView.findViewById(R.id.button_cancel);
-            Button confirm = (Button) contentView.findViewById(R.id.button_confirm);
-            final EditText newName = (EditText) contentView.findViewById(R.id.editText_username);
-
-            // create a 300px width and 470px height PopupWindow
-            popupWindow = new PopupWindow(contentView, 850, 450, true);
-            // display the popup in the center
-            popupWindow.showAtLocation(findViewById(android.R.id.content), Gravity.CENTER, 0, 0);
-            popupWindow.setAnimationStyle(android.R.style.Animation_Dialog);
-            popupWindow.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
-            popupWindow.setElevation(8.0f);
-
-            // Close window
-            cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    popupWindow.dismiss();
-                }
-            });
-
-            confirm.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    myUsername.setText(newName.getText().toString());
-                    popupWindow.dismiss();
-                }
-            });
 
     }
 
@@ -202,7 +197,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
             Intent intent = new Intent(this, MainActivity.class);
             intent.putExtra(PERSON_POSITION, position);
-
+            // TODO: send profile bitmap
             if (position == 0) {
                 // Set activity result on back.
                 String username = myUsername.getText().toString();

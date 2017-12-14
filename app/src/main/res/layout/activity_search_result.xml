@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.jingyuan.footprints.SearchResultActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <android.support.v7.widget.Toolbar
+            style="@style/AppTheme.ActionBar.Base"
+            android:id="@+id/my_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorPrimary"
+            android:minHeight="?attr/actionBarSize"
+            app:layout_scrollFlags="scroll|enterAlways|snap"
+            android:windowActionModeOverlay="true"
+            android:elevation="4dp" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/search_result"
+        android:layout_marginTop="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_margin="@dimen/activity_vertical_margin"
+            android:layout_width="match_parent"
+            android:weightSum="1"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/friends_profile"
+                android:layout_marginLeft="@dimen/activity_vertical_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_width="56dp"
+                android:layout_height="56dp" />
+
+
+            <TextView
+                android:id="@+id/friends_username"
+                android:text=" "
+                style="@style/ListFont.subTitle"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:gravity="right"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+
+
+                <ToggleButton
+                    android:id="@+id/toggleButton_follow"
+                    android:textAllCaps="false"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/colorPrimary"
+                    android:button="@drawable/ic_toggle_bg"
+                    android:layout_marginLeft="@dimen/activity_horizontal_margin"
+                    android:layout_gravity="right|center_vertical"
+                    android:textOn="@string/toggle_on"
+                    android:textOff="@string/toggle_off"
+                    android:layout_width="90dp"
+                    android:layout_height="40dp"
+                    android:text="ToggleButton" />
+
+            </LinearLayout>
+
+
+
+
+
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/progressBar1"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_centerHorizontal="true" />
+
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
