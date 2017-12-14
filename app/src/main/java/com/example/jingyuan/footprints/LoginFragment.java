@@ -63,7 +63,6 @@ public class LoginFragment extends Fragment {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity().getApplicationContext(), "sign in button", Toast.LENGTH_SHORT).show();
                 // get user input
                 final String userName = ((EditText)myView.findViewById(R.id.userName)).getText().toString();
                 final String passWord = ((EditText)myView.findViewById(R.id.passWord)).getText().toString();
@@ -74,9 +73,9 @@ public class LoginFragment extends Fragment {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         String password = "";
                         for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                            String name = (String) userSnapshot.child("userName").getValue();
+                            String name = (String) userSnapshot.child("username").getValue();
                             if(name.equals(userName)){
-                                password = (String) userSnapshot.child("passWord").getValue();
+                                password = (String) userSnapshot.child("password").getValue();
                                 break;
                             }
                         }
