@@ -74,9 +74,9 @@ public class LoginFragment extends Fragment {
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         String password = "";
                         for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                            String name = (String) userSnapshot.child("userName").getValue();
+                            String name = (String) userSnapshot.child("username").getValue();
                             if(name.equals(userName)){
-                                password = (String) userSnapshot.child("passWord").getValue();
+                                password = (String) userSnapshot.child("password").getValue();
                                 break;
                             }
                         }
