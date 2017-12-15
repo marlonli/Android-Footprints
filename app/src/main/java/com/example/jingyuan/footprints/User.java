@@ -18,14 +18,24 @@ public class User implements Serializable{
     String password;
     List<User> myFriends;
     List<Journal> myJournals;
-    Bitmap profile;
+    //Bitmap profile;
+    byte[] profileByteArray;
 
     public User(String username, String password) {
         this.username = username;
         this.password = password;
         myFriends = new ArrayList<>();
         myJournals = new ArrayList<>();
-        profile = null;
+        //profile = null;
+    }
+
+    public User (String username) {
+        this.username = username;
+        this.password = "";
+        myFriends = new ArrayList<>();
+        myJournals = new ArrayList<>();
+        //profile = null;
+        profileByteArray = new byte[0];
     }
 
     public long get_id() {
@@ -68,11 +78,15 @@ public class User implements Serializable{
         this.myJournals = myJournals;
     }
 
-    public Bitmap getProfile() {
-            return profile;
-    }
+//    public Bitmap getProfile() {
+//            return profile;
+//    }
 
-    public void setProfile(Bitmap profile) {
-        this.profile = profile;
-    }
+//    public void setProfile(Bitmap profile) {
+//        this.profile = profile;
+//    }
+
+    public byte[] getProfileByteArray() { return profileByteArray; }
+
+    public void setProfileByteArray(byte[] byteArray) {this.profileByteArray = byteArray; }
 }

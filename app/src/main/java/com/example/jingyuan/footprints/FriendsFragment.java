@@ -1,37 +1,35 @@
 package com.example.jingyuan.footprints;
 
-import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
-import com.wyh.slideAdapter.ItemBind;
-import com.wyh.slideAdapter.ItemView;
-import com.wyh.slideAdapter.SlideAdapter;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -56,6 +54,7 @@ public class FriendsFragment extends Fragment {
     private static final int SEARCH_FOR_FRIENDS_REQ = 1;
     private static final int OPEN_PROFILE_REQ = 2;
     private static final int FRIENDS_FRAGMENT_REQ = 1000;
+    private static final String DBName = "New_users";
 
     private String username;
     public List<User> friends = new ArrayList<>();
@@ -66,6 +65,7 @@ public class FriendsFragment extends Fragment {
 //    private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
+    private DatabaseReference mDatabase;
 
     public FriendsFragment() {
         // Required empty public constructor
@@ -92,6 +92,11 @@ public class FriendsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             username = getArguments().getString(ARG_PARAM1);
+
+            mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
+            // add current user as first element in list "friends"
+            //final User myself = new User(username);
+            //friends.add(0, myself);
         }
     }
 
@@ -107,13 +112,6 @@ public class FriendsFragment extends Fragment {
         // Set action bar menu
         setHasOptionsMenu(true);
 
-//        fab = getActivity().findViewById(R.id.fab_newjournal);
-
-        // Initialization
-        friends = new ArrayList<>();
-        addTestData();
-//        Collections.sort(friends, new JournalsComparator());
-
         // RecyclerView settings
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recyclerView_friends);
         mRecyclerView.setHasFixedSize(true);
@@ -124,6 +122,20 @@ public class FriendsFragment extends Fragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mAdapter = new MyFriendRecyclerViewAdapter(friends);
         mRecyclerView.setAdapter(mAdapter);
+//        fab = getActivity().findViewById(R.id.fab_newjournal);
+
+        // Initialization
+        //friends = new ArrayList<>();
+        //addTestData();
+        // load friends from database, use callback for synchronization
+        loadFriends(username, new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                mAdapter.notifyDataSetChanged();
+            }
+        });
+//        Collections.sort(friends, new JournalsComparator());
+
 //        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener(){
 //            @Override
 //            public void onScrolled(RecyclerView recyclerView, int dx, int dy){
@@ -135,6 +147,56 @@ public class FriendsFragment extends Fragment {
 //        });
 
         return v;
+    }
+
+    private void loadFriends(String name, final LoadDataCallback callback) {
+        final String myName = name;
+//        final ArrayList<User> friendss = new ArrayList<User>();
+        //DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String curName = "";
+                for(DataSnapshot userSnap : dataSnapshot.getChildren()) {
+                    curName = (String)userSnap.child("username").getValue();
+                    if(curName.equals(myName)) {
+                        // load username and profile of current user
+                        User curUser = loadCurrentUser(userSnap);
+                        // add current user to friends list as the first element
+                        friends.add(0, curUser);
+                        // load friends' username of current user
+                        Iterable<DataSnapshot> myFriends = userSnap.child("friends").getChildren();
+                        for(DataSnapshot snapshot : myFriends) {
+                            String friendName = (String)snapshot.getValue();
+                            User friend = new User(friendName);
+                            friends.add(friend);
+                        }
+                        break;
+                    }
+                }
+
+                callback.loadFinish();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private User loadCurrentUser(DataSnapshot snapshot) {
+        String userName = (String)snapshot.child("username").getValue();
+        User user = new User(userName);
+        // load current user's profile
+        if(snapshot.child("profile").getValue() != null) {
+            String encodedProfile = (String) snapshot.child("profile").getValue();
+            byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
+            //Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
+            //user.setProfile(myProfile);
+            user.setProfileByteArray(decodedByteArray);
+        }
+        return user;
     }
 
     private void addTestData() {
@@ -240,7 +302,6 @@ public class FriendsFragment extends Fragment {
 //
 //        }
 //    }
-
 
     @Override
     public void onAttach(Context context) {

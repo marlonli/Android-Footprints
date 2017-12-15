@@ -32,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
     private BottomNavigationView navigation;
     private FloatingActionButton fab;
     private String username;
+    private User currentUser;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -107,6 +108,10 @@ public class MainActivity extends AppCompatActivity implements AlbumFragment.OnF
 
     public void showLogin() {
         getFragmentManager().beginTransaction().replace(R.id.fragment_container, LoginFragment.newInstance(), "Login").addToBackStack(null).commit();
+    }
+
+    public void setUsername(String name) {
+        username = name;
     }
 
     public void getPermission() {

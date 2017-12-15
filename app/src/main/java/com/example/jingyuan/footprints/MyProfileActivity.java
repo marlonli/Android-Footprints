@@ -1,15 +1,24 @@
 package com.example.jingyuan.footprints;
 
+import android.*;
+import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.provider.MediaStore;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -24,8 +33,15 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,6 +60,12 @@ public class MyProfileActivity extends AppCompatActivity {
     private static final String JOURNAL_OBJECT = "journalObj";
     private static final int READ = 11;
     private int position; // if position == 0: my profile
+    private String userName;
+    private static final String DBName = "New_users";
+    private boolean imageTaken = false;
+    private static final int IMAGE_CAPTURE_REQUEST = 97;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
+    private static final String TAG = MyProfileActivity.class.getSimpleName();
 
     private User user;
     private ImageButton ib;
@@ -56,6 +78,8 @@ public class MyProfileActivity extends AppCompatActivity {
     private ArrayList<Journal> journals;
     private ListView listView;
     private MyJournalViewAdapter mAdapter;
+    private DatabaseReference mDatabase;
+    private DatabaseReference userRef;
 
 
     @Override
@@ -82,8 +106,21 @@ public class MyProfileActivity extends AppCompatActivity {
         // Set view
         Intent intent = getIntent();
         user = (User) intent.getSerializableExtra(PERSON_OBJECT);
-        if (user.getProfile() != null)
-            ib.setImageBitmap(user.getProfile());
+        userName = user.getUsername();
+        myUsername.setText(userName);
+        mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
+        userRef = mDatabase.child(userName);
+
+        // load other info from DB, in other words, User object is initialized here
+        loadInfo(userName);
+
+
+//        if (user.getProfile() != null)
+//            ib.setImageBitmap(user.getProfile());
+        if(user.getProfileByteArray() != null) {
+            Bitmap myProfile = BitmapFactory.decodeByteArray(user.getProfileByteArray(), 0, user.getProfileByteArray().length);
+            ib.setImageBitmap(myProfile);
+        }
 
         myUsername.setText(user.getUsername());
         if (user.getMyJournals() != null) {
@@ -118,7 +155,12 @@ public class MyProfileActivity extends AppCompatActivity {
         ib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: open photo lib or camera
+                // TODO: open photo lib (or camera)
+                if(!imageTaken) {
+                    // open camera
+                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, IMAGE_CAPTURE_REQUEST);
+                }
             }
         });
 
@@ -151,6 +193,52 @@ public class MyProfileActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void loadInfo(final String myName) { // TODO: change code to use userRef
+        DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
+        mDatabase.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String curName = "";
+                for(DataSnapshot userSnap : dataSnapshot.getChildren()) {
+                    curName = (String)userSnap.child("username").getValue();
+                    if(curName.equals(myName)) {
+//                        // load and decode profile
+//                        String encodedProfile = (String)userSnap.child("profile").getValue();
+//                        byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
+//                        Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
+//                        ib.setImageBitmap(myProfile);
+                        //loadFriends(userSnap);
+                        //loadJournals(userSnap);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == Activity.RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap photo = (Bitmap)extras.get("data");
+            ib.setImageBitmap(photo);
+            imageTaken = true;
+            saveProfiletoDB(photo);
+        }
+    }
+
+    private void saveProfiletoDB(Bitmap photo) {
+        //userRef.child()
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        photo.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+        userRef.child("profile").setValue(imageEncoded);
     }
 
     public void openEditor(int journalIndex) {
