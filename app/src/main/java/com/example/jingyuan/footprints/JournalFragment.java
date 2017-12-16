@@ -286,6 +286,7 @@ public class JournalFragment extends Fragment {
         bbb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                journals.clear();
                 for (DataSnapshot snap:dataSnapshot.getChildren()){
                     String key = snap.getKey();
                     String title = (String) snap.child("title").getValue();
