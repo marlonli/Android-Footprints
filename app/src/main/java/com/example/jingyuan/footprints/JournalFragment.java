@@ -3,6 +3,8 @@ package com.example.jingyuan.footprints;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
@@ -18,6 +20,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -308,6 +311,12 @@ public class JournalFragment extends Fragment {
                     String lng = (String) snap.child("lng").getValue();
                     ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
+                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                    if (photo_string!=null) {
+                        ArrayList<Bitmap> photo_bit = photo_bit_to_string(photo_string);
+                        journal.setPhotos(photo_bit);
+                    }
+
                     journals.add(journal);
                 }
 //                updateList();
@@ -321,8 +330,20 @@ public class JournalFragment extends Fragment {
         });
     }
 
+
     private void sortList() {
         Collections.sort(journals, new JournalsComparator());
+    }
+    
+    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+        for (int i=0;i<photo_string.size();i++){
+            String photo_string_tmp = photo_string.get(i);
+            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+            photo_bit.add(photo_bit_tmp);
+        }
+        return photo_bit;
     }
 
     private void addTestData() {

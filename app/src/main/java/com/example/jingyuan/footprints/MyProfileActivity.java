@@ -82,11 +82,12 @@ public class MyProfileActivity extends AppCompatActivity {
     private Toolbar myToolbar;
     private TextView editButton;
     private PopupWindow popupWindow;
-    private ArrayList<Journal> journals;
+    private ArrayList<Journal> journal_list;
     private ListView listView;
     private MyJournalViewAdapter mAdapter;
     private DatabaseReference mDatabase;
     private DatabaseReference userRef;
+    private int friend_num;
 
     protected Uri photoUri = null;
     protected Uri photoOutputUri = null;
@@ -105,9 +106,9 @@ public class MyProfileActivity extends AppCompatActivity {
         editButton = (TextView) findViewById(R.id.textView_edit);
         listView = (ListView) findViewById(R.id.listView_journals);
         popupWindow = null;
-        journals = new ArrayList<>();
+        journal_list = new ArrayList<>();
 
-        addTestData();
+        //addTestData();
 
         // Set toolbar
         myToolbar = (Toolbar) findViewById(R.id.my_toolbar);
@@ -121,27 +122,39 @@ public class MyProfileActivity extends AppCompatActivity {
         mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
         userRef = mDatabase.child(userName);
 
-        // load other info from DB, in other words, User object is initialized here
-        loadInfo(userName);
+        // show profile
+        if(user.getProfileByteArray() != null) {
+            Bitmap myProfile = BitmapFactory.decodeByteArray(user.getProfileByteArray(), 0, user.getProfileByteArray().length);
+            ib.setImageBitmap(myProfile);
+        }
+        // display username
+        myUsername.setText(user.getUsername());
+
+        // load other info from DB
+        loadInfo(userName, new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                // display number of journals
+                journalNum.setText("" + journal_list.size());
+                // display number of friends
+                friendsNum.setText("" + friend_num);
+            }
+        });
 
 
 //        if (user.getProfile() != null)
 //            ib.setImageBitmap(user.getProfile());
-        if(user.getProfileByteArray().length > 0) {
-            Bitmap myProfile = BitmapFactory.decodeByteArray(user.getProfileByteArray(), 0, user.getProfileByteArray().length);
-            ib.setImageBitmap(myProfile);
-        }
 
-        myUsername.setText(user.getUsername());
-        if (user.getMyJournals() != null) {
-            int size = user.getMyJournals().size();
-            journalNum.setText("" + size);
-        }
 
-        if (user.getMyFriends() != null) {
-            int size = user.getMyJournals().size();
-            friendsNum.setText("" + size);
-        }
+//        if (user.getMyJournals() != null) {
+//            int size = user.getMyJournals().size();
+//            journalNum.setText("" + size);
+//        }
+
+//        if (user.getMyFriends() != null) {
+//            int size = user.getMyJournals().size();
+//            friendsNum.setText("" + size);
+//        }
 
         // If not my profile
         position = intent.getIntExtra(PERSON_POSITION, 0);
@@ -152,7 +165,7 @@ public class MyProfileActivity extends AppCompatActivity {
             ib.setEnabled(false);
 
             // Set listView
-            mAdapter = new MyJournalViewAdapter(this, journals);
+            mAdapter = new MyJournalViewAdapter(this, journal_list);
             listView.setAdapter(mAdapter);
 
         } else {
@@ -177,22 +190,23 @@ public class MyProfileActivity extends AppCompatActivity {
             }
         });
 
-        // Edit username
+        // Edit password
         editButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 LayoutInflater factory = LayoutInflater.from(MyProfileActivity.this);
                 view = factory.inflate(R.layout.popup_edit_username, null);
-                final EditText newName = (EditText) view.findViewById(R.id.editText_username);
+                final EditText newPassword = (EditText) view.findViewById(R.id.editText_username);
                 new AlertDialog.Builder(view.getContext())
-                        .setTitle("Edit Username")     //title
+                        .setTitle("Edit Password")     //title
                         .setView(view)
                         .setPositiveButton("Confirm",
                                 new android.content.DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog,
                                                         int which) {
-                                        myUsername.setText(newName.getText().toString());
+                                        //myUsername.setText(newName.getText().toString());
+                                        savePassWordtoDB(newPassword.getText().toString());
                                     }
                                 }).setNegativeButton("Cancel", null).create().show();
             }
@@ -208,68 +222,74 @@ public class MyProfileActivity extends AppCompatActivity {
 
     }
 
-    private void startCamera() {
-        // Use name as photo id
-        File file = new File(getExternalCacheDir(), userName + ".jpg");
-        Log.v("capture", "startCamera imagename: " + userName);
-        try {
-            if(file.exists()) {
-                Log.v("capture", "startCameraimagename exists! ");
-                file.delete();
-            }
-            file.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        /**
-         * Use FileProvider to share data
-         */
-        if(Build.VERSION.SDK_INT >= 24) {
-            photoUri = FileProvider.getUriForFile(this, "com.example.jingyuan.footprints.fileprovider", file);
-            Log.v("capture", "startCamera set photoUri" + photoUri);
-        } else {
-            photoUri = Uri.fromFile(file);
-        }
-        // start image capture
-        Intent takePhotoIntent = new Intent();
-        takePhotoIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-        // Set output dir
-        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-        startActivityForResult(takePhotoIntent, IMAGE_CAPTURE_REQUEST);
-
-    }
-
-    private void cropPhoto(Uri inputUri) {
-        // crop action
-        Intent cropPhotoIntent = new Intent("com.android.camera.action.CROP");
-        // Set uri and type
-        cropPhotoIntent.setDataAndType(inputUri, "image/*");
-        // authorize reading uri
-        cropPhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        // set output file dir
-        cropPhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                photoOutputUri = Uri.parse("file:////sdcard/" + userName + ".jpg"));
-        startActivityForResult(cropPhotoIntent, IMAGE_CROP_REQUEST);
-    }
-
-    private void loadInfo(final String myName) { // TODO: change code to use userRef
+//<<<<<<< HEAD
+    private void loadInfo(final String myName, final LoadDataCallback callback) { // TODO: change code to use userRef
+//=======
+//    private void startCamera() {
+//        // Use name as photo id
+//        File file = new File(getExternalCacheDir(), userName + ".jpg");
+//        Log.v("capture", "startCamera imagename: " + userName);
+//        try {
+//            if(file.exists()) {
+//                Log.v("capture", "startCameraimagename exists! ");
+//                file.delete();
+//            }
+//            file.createNewFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        /**
+//         * Use FileProvider to share data
+//         */
+//        if(Build.VERSION.SDK_INT >= 24) {
+//            photoUri = FileProvider.getUriForFile(this, "com.example.jingyuan.footprints.fileprovider", file);
+//            Log.v("capture", "startCamera set photoUri" + photoUri);
+//        } else {
+//            photoUri = Uri.fromFile(file);
+//        }
+//        // start image capture
+//        Intent takePhotoIntent = new Intent();
+//        takePhotoIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+//        // Set output dir
+//        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+//        startActivityForResult(takePhotoIntent, IMAGE_CAPTURE_REQUEST);
+//
+//    }
+//
+//    private void cropPhoto(Uri inputUri) {
+//        // crop action
+//        Intent cropPhotoIntent = new Intent("com.android.camera.action.CROP");
+//        // Set uri and type
+//        cropPhotoIntent.setDataAndType(inputUri, "image/*");
+//        // authorize reading uri
+//        cropPhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        // set output file dir
+//        cropPhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+//                photoOutputUri = Uri.parse("file:////sdcard/" + userName + ".jpg"));
+//        startActivityForResult(cropPhotoIntent, IMAGE_CROP_REQUEST);
+//    }
+//
+//    private void loadInfo(final String myName) { // TODO: change code to use userRef
+//>>>>>>> origin/master
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
-        mDatabase.addValueEventListener(new ValueEventListener() {
+        mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String curName = "";
                 for(DataSnapshot userSnap : dataSnapshot.getChildren()) {
                     curName = (String)userSnap.child("username").getValue();
                     if(curName.equals(myName)) {
-//                        // load and decode profile
-//                        String encodedProfile = (String)userSnap.child("profile").getValue();
-//                        byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
-//                        Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
-//                        ib.setImageBitmap(myProfile);
-                        //loadFriends(userSnap);
-                        //loadJournals(userSnap);
+                        // load and decode profile
+                        String encodedProfile = (String)userSnap.child("profile").getValue();
+                        byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
+                        Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
+                        ib.setImageBitmap(myProfile);
+                        loadFriends(userSnap);
+                        loadJournals(userSnap);
                     }
                 }
+
+                callback.loadFinish();
             }
 
             @Override
@@ -279,28 +299,54 @@ public class MyProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void loadFriends(DataSnapshot userSnap) {
+        friend_num = (int)userSnap.child("friends").getChildrenCount();
+    }
+
+    private void loadJournals(DataSnapshot userSnap) {
+        DataSnapshot journals = userSnap.child("journal_list");
+        for(DataSnapshot journal : journals.getChildren()) {
+            String title = (String)journal.child("title").getValue();
+            ArrayList<String> tags = new ArrayList<>();
+            if(journal.child("tags").getValue() != null)
+                tags = (ArrayList<String>)journal.child("tags").getValue();
+            ArrayList<String> photos = new ArrayList<>();
+            if(journal.child("photos").getValue() != null)
+                photos = (ArrayList<String>)journal.child("photos").getValue();
+            long datetime = (long)journal.child("dateTimeLong").getValue();
+            String lat = (String)journal.child("lat").getValue();
+            String lng = (String)journal.child("lng").getValue();
+            String address = "";
+            if(journal.child("address").getValue() != null)
+                address = (String)journal.child("address").getValue();
+            String content = (String)journal.child("content").getValue();
+            Journal j = new Journal(title, tags, datetime, lat, lng, content);
+            journal_list.add(j);
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == Activity.RESULT_OK) {
-            cropPhoto(photoUri);
-//            Bundle extras = data.getExtras();
-//            Bitmap photo = (Bitmap)extras.get("data");
-//            ib.setImageBitmap(photo);
-//            imageTaken = true;
-//            saveProfiletoDB(photo);
+//            cropPhoto(photoUri);
+            Bundle extras = data.getExtras();
+            Bitmap photo = (Bitmap)extras.get("data");
+            ib.setImageBitmap(photo);
+            imageTaken = true;
+            saveProfiletoDB(photo);
         }
-        else if (requestCode == IMAGE_CROP_REQUEST && resultCode == Activity.RESULT_OK) {
-            File file = new File(photoOutputUri.getPath());
-            if(file.exists()) {
-                Log.v("capture", "onActivityResult" + photoOutputUri.getPath());
-                Bitmap photo = BitmapFactory.decodeFile(photoOutputUri.getPath());
-                ib.setImageBitmap(photo);
-                imageTaken = true;
-                saveProfiletoDB(photo);
-            } else {
-                Toast.makeText(this, "Image not found!", Toast.LENGTH_SHORT).show();
-            }
-        }
+//        else if (requestCode == IMAGE_CROP_REQUEST && resultCode == Activity.RESULT_OK) {
+//            File file = new File(photoOutputUri.getPath());
+//            if(file.exists()) {
+//                Log.v("capture", "onActivityResult" + photoOutputUri.getPath());
+//                Bitmap photo = BitmapFactory.decodeFile(photoOutputUri.getPath());
+//                ib.setImageBitmap(photo);
+//                imageTaken = true;
+//                saveProfiletoDB(photo);
+//            } else {
+//                Toast.makeText(this, "Image not found!", Toast.LENGTH_SHORT).show();
+//            }
+//        }
     }
 
     private void saveProfiletoDB(Bitmap photo) {
@@ -311,10 +357,14 @@ public class MyProfileActivity extends AppCompatActivity {
         userRef.child("profile").setValue(imageEncoded);
     }
 
+    private void savePassWordtoDB(String pw) {
+        userRef.child("password").setValue(pw);
+    }
+
     public void openEditor(int journalIndex) {
         Intent intent = new Intent(this, JournalEditorActivity.class);
         intent.putExtra(EDITOR_MODE, READ);
-        intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+        intent.putExtra(JOURNAL_OBJECT, journal_list.get(journalIndex));
         intent.putExtra("username",myUsername.getText().toString());
         startActivity(intent);
     }
@@ -341,11 +391,11 @@ public class MyProfileActivity extends AppCompatActivity {
         testTags.add("tag1");
         testTags.add("tag2");
         testTags.add("tag3");
-        journals.add(new Journal("Journal1", testTags, currentTime, "30", "120", getString(R.string.large_text)));
-        journals.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("OMG OMG", testTags, startDate1, "40", "-74", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
-        journals.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
-        journals.add(new Journal("Journal1", testTags, currentTime, "30", "-70", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journal_list.add(new Journal("Journal1", testTags, currentTime, "30", "120", getString(R.string.large_text)));
+        journal_list.add(new Journal("Journal title", testTags, currentTime - 86400000, "30", "-120", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journal_list.add(new Journal("OMG OMG", testTags, startDate1, "40", "-74", "Often you will want one Fragment to communicate with another, for example to change the content based on a user event. All Fragment-to-Fragment communication is done through the associated Activity. Two Fragments should never communicate directly."));
+        journal_list.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
+        journal_list.add(new Journal("Journal1", testTags, currentTime, "30", "-70", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
 
     }
 
