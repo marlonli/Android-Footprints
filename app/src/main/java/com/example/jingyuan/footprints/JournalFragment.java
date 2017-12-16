@@ -292,7 +292,6 @@ public class JournalFragment extends Fragment {
                     String lat = (String) snap.child("lat").getValue();
                     String lng = (String) snap.child("lng").getValue();
                     ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
-
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
                     journals.add(journal);
                 }
@@ -467,6 +466,9 @@ public class JournalFragment extends Fragment {
         intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL) {
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+            intent.putExtra("username", username);
+        }
+        else{
             intent.putExtra("username", username);
         }
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);

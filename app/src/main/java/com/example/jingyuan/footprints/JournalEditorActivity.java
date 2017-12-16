@@ -105,7 +105,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private List<String> list_Of_Num;
     private List<Map<String, Object>> list_Of_Map;
 
-    String username;
+    public String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
