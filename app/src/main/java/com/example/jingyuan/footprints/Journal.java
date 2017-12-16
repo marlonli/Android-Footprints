@@ -21,6 +21,7 @@ class Journal implements Serializable {
     private String lng;
     private String address;
     private String content;
+    private ArrayList<String> photo_string;
 
     public ArrayList<Bitmap> getPhotos() {
         return photos;
@@ -115,5 +116,13 @@ class Journal implements Serializable {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public ArrayList<String> getPhotoString(){
+        return this.photo_string;
+    }
+
+    public void setPhoto_string(ArrayList<String> photo_string){
+        this.photo_string = photo_string;
     }
 }

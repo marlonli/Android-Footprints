@@ -26,6 +26,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +51,8 @@ import com.google.firebase.database.ValueEventListener;
 
 
 import org.w3c.dom.Text;
+
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -97,12 +100,12 @@ public class JournalEditorActivity extends AppCompatActivity {
     private String mAddressOutput;
     private SimpleAdapter simp_adapter;
 
-    private ArrayList<String> tags;  //list_Of_Tags;
-    private ArrayList<Bitmap> photos;    //list_Of_Images;
+    private ArrayList<String> tags;  // list_Of_Tags;
+    private ArrayList<Bitmap> photos;    // list_Of_Images;
     private List<String> list_Of_Num;
     private List<Map<String, Object>> list_Of_Map;
 
-    String username;
+    public String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +153,22 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
+                ArrayList<String> tags_tmp = journal.getTags();
+                list_Of_Map.clear();
+                if (tags_tmp!=null){
+                    tags = tags_tmp;
+                    int size = tags.size();
+                    list_Of_Num.clear();
+                    for(int i = 0; i < size; i++){
+                        list_Of_Num.add(Integer.toString(i+1)+".");
+                    }
+                    for (int i = 0; i < tags.size(); i++) {
+                        Map<String, Object> listem = new HashMap<String, Object>();
+                        listem.put("index", list_Of_Num.get(i));
+                        listem.put("tag", tags.get(i));
+                        list_Of_Map.add(listem);
+                    }
+                }
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
@@ -174,13 +193,6 @@ public class JournalEditorActivity extends AppCompatActivity {
                                         String str_size = Integer.toString(size)+".";
                                         Log.i("fdsd",str_size);
                                         list_Of_Num.add(str_size);
-                                        list_Of_Map.clear();
-                                        for (int i = 0; i < tags.size(); i++) {
-                                            Map<String, Object> listem = new HashMap<String, Object>();
-                                            listem.put("index", list_Of_Num.get(i));
-                                            listem.put("tag", tags.get(i));
-                                            list_Of_Map.add(listem);
-                                        }
                                     }
                                 }).setNegativeButton("Cancel", null).create().show();
             }
@@ -219,9 +231,6 @@ public class JournalEditorActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // TODO: set return value (save to database)
 
-                // Test user name.
-                username = "User1";
-
                 // If it is a null journal
                 if (journal==null){
 
@@ -229,7 +238,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                     journal = new Journal(et_title.getText().toString(), tags,current_time_long,
                     currentLatitude+"",currentLongitude+"", et_content.getText().toString());
 
-                    journal.setPhotos(photos);
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
 
                     // Save the new journal in the database.
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -238,7 +248,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                 }
                 else{
                     // Update the new journal
-                    journal.setPhotos(photos);
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
                     journal.setTags(tags);
 
                     //save data here:
@@ -250,7 +261,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
                                 String key_title = snap.getKey();
-                                if (key_title.equals("aaaaa")){
+                                if (key_title.equals(journal.getTitle())){
                                     Map<String,Object> UP = new HashMap<>();
                                     UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
@@ -278,6 +289,21 @@ public class JournalEditorActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
+        ArrayList<String> photo_string = new ArrayList<String>();
+        for (int i=0;i<photo_bit.size();i++){
+            Bitmap photo_tmp = photo_bit.get(i);
+            if(photo_tmp!=null){
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                photo_tmp.compress(Bitmap.CompressFormat.PNG,100,baos);
+                byte[] b = baos.toByteArray();
+                String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
+                photo_string.add(imageEncoded);
+            }
+        }
+        return photo_string;
     }
 
 
