@@ -153,7 +153,9 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                ArrayList<String> tags_tmp = journal.getTags();
+                ArrayList<String> tags_tmp = new ArrayList<>();
+                if (journal != null)
+                     tags_tmp = journal.getTags();
                 list_Of_Map.clear();
                 if (tags_tmp!=null){
                     tags = tags_tmp;

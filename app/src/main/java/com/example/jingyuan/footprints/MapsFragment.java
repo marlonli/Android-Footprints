@@ -136,7 +136,7 @@ public class MapsFragment extends Fragment {
                     }
 
                     // TODO: get journals: journals = ??
-                    setMarkers();
+//                    setMarkers();
                 }
 
                 // For dropping a marker at a point on the Map

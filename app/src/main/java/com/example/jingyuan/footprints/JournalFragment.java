@@ -334,7 +334,7 @@ public class JournalFragment extends Fragment {
     private void sortList() {
         Collections.sort(journals, new JournalsComparator());
     }
-    
+
     private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
         ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
         for (int i=0;i<photo_string.size();i++){
