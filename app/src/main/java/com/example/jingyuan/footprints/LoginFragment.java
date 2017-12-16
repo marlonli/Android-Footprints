@@ -38,6 +38,7 @@ public class LoginFragment extends Fragment {
     private BottomNavigationView navigationView;
     private FloatingActionButton fab;
     private static final String ARG_PARAM1 = "param1";
+    private User user;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -63,7 +64,6 @@ public class LoginFragment extends Fragment {
         loginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(getActivity().getApplicationContext(), "sign in button", Toast.LENGTH_SHORT).show();
                 // get user input
                 final String userName = ((EditText)myView.findViewById(R.id.userName)).getText().toString();
                 final String passWord = ((EditText)myView.findViewById(R.id.passWord)).getText().toString();
@@ -100,6 +100,10 @@ public class LoginFragment extends Fragment {
                     // make navigation bar and fab visible
                     navigationView.setVisibility(View.VISIBLE);
                     fab.setVisibility(View.VISIBLE);
+
+                    // set value of object "username" in MainActivity
+                    ((MainActivity)getActivity()).setUsername(userName);
+
                     // move to journal fragment
                     String para1 = "journal_para1";
                     String para2 = "journal_para2";
@@ -121,11 +125,14 @@ public class LoginFragment extends Fragment {
                     Toast.makeText(getContext(), "Please Enter Password", Toast.LENGTH_SHORT).show();
                 if(!userName.equals("") && !passWord.equals("")) {
                     User newUser = new User(userName, passWord);
-                    mDatabase.child(DatabaseName).child(newUser.getUsername()).setValue(newUser);
+                    mDatabase.child(DatabaseName).child(newUser.getUsername()).setValue(newUser);       // TODO: whether to use push() or not
 
                     // make navigation bar and fab visible
                     navigationView.setVisibility(View.VISIBLE);
                     fab.setVisibility(View.VISIBLE);
+
+                    // set value of object "username" in MainActivity
+                    ((MainActivity)getActivity()).setUsername(userName);
 
                     // move to journal fragment
                     String para1 = "journal_para1";

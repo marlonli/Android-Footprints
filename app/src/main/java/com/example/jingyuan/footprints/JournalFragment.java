@@ -73,15 +73,17 @@ public class JournalFragment extends Fragment {
     private static final int EDIT = 10;
 
     public String username;
-//    private SwipeMenuListView lv;
+    //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
-//    MyJournalViewAdapter madapter;
+    //    MyJournalViewAdapter madapter;
     MyJournalRecyclerViewAdapter mAdapter;
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
     private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
+
+    public ItemBind itemBind;
 
     /*// Create SwipeMenuCreator
     SwipeMenuCreator creator = new SwipeMenuCreator() {
@@ -162,7 +164,15 @@ public class JournalFragment extends Fragment {
 
         // Initialization
         journals = new ArrayList<>();
-        read_data_from_database();
+        read_data_from_database(new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                SlideAdapter.load(journals)
+                        .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
+                        .bind(itemBind)
+                        .into(mRecyclerView);
+            }
+        });
 //        addTestData();
 //        Collections.sort(journals, new JournalsComparator());
 
@@ -192,7 +202,7 @@ public class JournalFragment extends Fragment {
 //        mAdapter = new MyJournalRecyclerViewAdapter(journals);
 //        mRecyclerView.setAdapter(mAdapter);
 
-        ItemBind itemBind = new ItemBind<Journal>() {
+        itemBind = new ItemBind<Journal>() {
             @Override
             public void onBind(ItemView itemView, Journal j, final int position) {
                 itemView.setText(R.id.list_title, j.getTitle())
@@ -206,11 +216,8 @@ public class JournalFragment extends Fragment {
                 itemView.setText(R.id.list_content, j.getContent());
                 String loc = latLngToLoc(j.getLat(), j.getLng());
                 itemView.setText(R.id.list_location, loc);
-//                ArrayList<String> tags = journals.get(position).getTags();
-//                if (tags != null){
-//                    String tags1 = tags.get(0);
-//                    itemView.setText(R.id.list_tag, tags1.substring(1,tags.length() - 1));
-//                }
+//                String tags_tmp = journals.get(position).getTags().toSt
+//                itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
                 itemView.setText(R.id.list_date, j.getDateTimeString().toString().split(" ")[2]);
                 itemView.setOnClickListener(R.id.rightMenu_delete, new View.OnClickListener() {
@@ -264,11 +271,11 @@ public class JournalFragment extends Fragment {
         return v;
     }
 
-    private void read_data_from_database(){
+    private void read_data_from_database(final LoadDataCallback callback){
         username = "User1";
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference Users = database.getReference("New_users");
-        DatabaseReference aaa = Users.child("User1");
+        DatabaseReference aaa = Users.child(username);
         DatabaseReference bbb = aaa.child("journal_list");
         bbb.addValueEventListener(new ValueEventListener() {
             @Override
@@ -286,6 +293,7 @@ public class JournalFragment extends Fragment {
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
                     journals.add(journal);
                 }
+                callback.loadFinish();
             }
 
             @Override

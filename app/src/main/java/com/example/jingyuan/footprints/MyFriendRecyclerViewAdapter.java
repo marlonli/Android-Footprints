@@ -1,6 +1,8 @@
 package com.example.jingyuan.footprints;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,8 +82,12 @@ public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRe
     public void onBindViewHolder(MyFriendRecyclerViewAdapter.ViewHolder holder, int position) {
 
         holder.username.setText(friends.get(position).getUsername());
-        if (friends.get(position).getProfile() != null)
-            holder.profile.setImageBitmap(friends.get(position).getProfile());
+//        if (friends.get(position).getProfile() != null)
+//            holder.profile.setImageBitmap(friends.get(position).getProfile());
+        if(friends.get(position).getProfileByteArray() != null) {
+            Bitmap myProfile = BitmapFactory.decodeByteArray(friends.get(position).getProfileByteArray(), 0, friends.get(position).getProfileByteArray().length);
+            holder.profile.setImageBitmap(myProfile);
+        }
         else {
             holder.profile.setImageResource(R.drawable.ic_person_black_24dp);
         }
