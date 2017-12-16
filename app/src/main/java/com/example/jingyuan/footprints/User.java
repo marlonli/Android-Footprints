@@ -35,7 +35,7 @@ public class User implements Serializable{
         myFriends = new ArrayList<>();
         myJournals = new ArrayList<>();
         //profile = null;
-        profileByteArray = new byte[0];
+        profileByteArray = null;
     }
 
     public long get_id() {
