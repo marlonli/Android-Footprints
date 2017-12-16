@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +21,13 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
 
 
 /**
@@ -41,6 +46,7 @@ public class MapsFragment extends Fragment {
     private static final int LOC_PERMISSION_REQUEST_CODE = 10;
 
     private String username;
+    private ArrayList<Journal> journals;
 
     private OnFragmentInteractionListener mListener;
 
@@ -129,6 +135,7 @@ public class MapsFragment extends Fragment {
                         }
                     }
 
+                    // TODO: get journals: journals = ??
                     setMarkers();
                 }
 
@@ -148,7 +155,16 @@ public class MapsFragment extends Fragment {
     }
 
     private void setMarkers() {
-
+        // TODO: set markers
+        if (journals.size() != 0)
+            for (Journal j : journals) {
+                LatLng pnt = new LatLng(Double.valueOf(j.getLat()), Double.valueOf(j.getLng()));
+                Marker mPoint = googleMap.addMarker(new MarkerOptions()
+                        .position(pnt)
+//                        .title(j.getTitle())
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_maps_marker)));
+//                mPoint.setTag(0);
+            }
     }
 
     // TODO: Rename method, update argument and hook method into UI event

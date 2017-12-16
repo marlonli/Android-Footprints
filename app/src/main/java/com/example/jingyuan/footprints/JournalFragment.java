@@ -28,6 +28,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.baoyz.swipemenulistview.SwipeMenu;
@@ -76,9 +77,11 @@ public class JournalFragment extends Fragment {
 //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
 //    MyJournalViewAdapter madapter;
-    MyJournalRecyclerViewAdapter mAdapter;
-    RecyclerView mRecyclerView;
-    RecyclerView.LayoutManager mLayoutManager;
+//    MyJournalRecyclerViewAdapter mAdapter;
+    private RecyclerView mRecyclerView;
+    private TextView emptyView;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private SlideAdapter slideAdapter;
     private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
@@ -170,6 +173,7 @@ public class JournalFragment extends Fragment {
 //        madapter = new MyJournalViewAdapter(getActivity(), journals);
 //        lv.setAdapter(madapter);
 
+        emptyView = (TextView) v.findViewById(R.id.empty_view);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.recyclerView_journals);
         mRecyclerView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(getActivity());
@@ -195,6 +199,7 @@ public class JournalFragment extends Fragment {
         ItemBind itemBind = new ItemBind<Journal>() {
             @Override
             public void onBind(ItemView itemView, Journal j, final int position) {
+                if (j == null ) return;
                 itemView.setText(R.id.list_title, j.getTitle())
                         .setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -206,7 +211,7 @@ public class JournalFragment extends Fragment {
                 itemView.setText(R.id.list_content, j.getContent());
                 String loc = latLngToLoc(j.getLat(), j.getLng());
                 itemView.setText(R.id.list_location, loc);
-                String tags = journals.get(position).getTags().toString();
+                String tags = j.getTags().toString();
                 itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
                 itemView.setText(R.id.list_date, j.getDateTimeString().toString().split(" ")[2]);
@@ -326,6 +331,9 @@ public class JournalFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        Log.v("JournalFragment", "onCreateView");
+
+        setEmptyView(journals.size() == 0);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -417,6 +425,17 @@ public class JournalFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void setEmptyView(boolean isEmpty) {
+        if (isEmpty) {
+            mRecyclerView.setVisibility(View.GONE);
+            emptyView.setVisibility(View.VISIBLE);
+        }
+        else {
+            mRecyclerView.setVisibility(View.VISIBLE);
+            emptyView.setVisibility(View.GONE);
+        }
     }
 
     /**

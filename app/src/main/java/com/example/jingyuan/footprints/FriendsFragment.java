@@ -157,6 +157,7 @@ public class FriendsFragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String curName = "";
+                friends.clear();
                 for(DataSnapshot userSnap : dataSnapshot.getChildren()) {
                     curName = (String)userSnap.child("username").getValue();
                     if(curName.equals(myName)) {
