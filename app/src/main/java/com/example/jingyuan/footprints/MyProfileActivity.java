@@ -12,9 +12,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -32,6 +35,7 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -42,6 +46,8 @@ import com.google.firebase.database.ValueEventListener;
 import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +70,7 @@ public class MyProfileActivity extends AppCompatActivity {
     private static final String DBName = "New_users";
     private boolean imageTaken = false;
     private static final int IMAGE_CAPTURE_REQUEST = 97;
+    private static final int IMAGE_CROP_REQUEST = 98;
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 100;
     private static final String TAG = MyProfileActivity.class.getSimpleName();
 
@@ -80,6 +87,9 @@ public class MyProfileActivity extends AppCompatActivity {
     private MyJournalViewAdapter mAdapter;
     private DatabaseReference mDatabase;
     private DatabaseReference userRef;
+
+    protected Uri photoUri = null;
+    protected Uri photoOutputUri = null;
 
 
     @Override
@@ -117,7 +127,7 @@ public class MyProfileActivity extends AppCompatActivity {
 
 //        if (user.getProfile() != null)
 //            ib.setImageBitmap(user.getProfile());
-        if(user.getProfileByteArray() != null) {
+        if(user.getProfileByteArray().length > 0) {
             Bitmap myProfile = BitmapFactory.decodeByteArray(user.getProfileByteArray(), 0, user.getProfileByteArray().length);
             ib.setImageBitmap(myProfile);
         }
@@ -139,6 +149,7 @@ public class MyProfileActivity extends AppCompatActivity {
 //            myUsername.setEnabled(false);
             editButton.setText("");
             ib.setClickable(false);
+            ib.setEnabled(false);
 
             // Set listView
             mAdapter = new MyJournalViewAdapter(this, journals);
@@ -158,8 +169,10 @@ public class MyProfileActivity extends AppCompatActivity {
                 // TODO: open photo lib (or camera)
                 if(!imageTaken) {
                     // open camera
-                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    startActivityForResult(cameraIntent, IMAGE_CAPTURE_REQUEST);
+//                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+//                    startActivityForResult(cameraIntent, IMAGE_CAPTURE_REQUEST);
+//                    startCamera();
+                    openOptionsMenu();
                 }
             }
         });
@@ -195,6 +208,50 @@ public class MyProfileActivity extends AppCompatActivity {
 
     }
 
+    private void startCamera() {
+        // Use name as photo id
+        File file = new File(getExternalCacheDir(), userName + ".jpg");
+        Log.v("capture", "startCamera imagename: " + userName);
+        try {
+            if(file.exists()) {
+                Log.v("capture", "startCameraimagename exists! ");
+                file.delete();
+            }
+            file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /**
+         * Use FileProvider to share data
+         */
+        if(Build.VERSION.SDK_INT >= 24) {
+            photoUri = FileProvider.getUriForFile(this, "com.example.jingyuan.footprints.fileprovider", file);
+            Log.v("capture", "startCamera set photoUri" + photoUri);
+        } else {
+            photoUri = Uri.fromFile(file);
+        }
+        // start image capture
+        Intent takePhotoIntent = new Intent();
+        takePhotoIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+        // Set output dir
+        takePhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+        startActivityForResult(takePhotoIntent, IMAGE_CAPTURE_REQUEST);
+
+    }
+
+    private void cropPhoto(Uri inputUri) {
+        // crop action
+        Intent cropPhotoIntent = new Intent("com.android.camera.action.CROP");
+        // Set uri and type
+        cropPhotoIntent.setDataAndType(inputUri, "image/*");
+        // authorize reading uri
+        cropPhotoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        // set output file dir
+        cropPhotoIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                photoOutputUri = Uri.parse("file:////sdcard/" + userName + ".jpg"));
+        startActivityForResult(cropPhotoIntent, IMAGE_CROP_REQUEST);
+    }
+
     private void loadInfo(final String myName) { // TODO: change code to use userRef
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
         mDatabase.addValueEventListener(new ValueEventListener() {
@@ -225,11 +282,24 @@ public class MyProfileActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == IMAGE_CAPTURE_REQUEST && resultCode == Activity.RESULT_OK) {
-            Bundle extras = data.getExtras();
-            Bitmap photo = (Bitmap)extras.get("data");
-            ib.setImageBitmap(photo);
-            imageTaken = true;
-            saveProfiletoDB(photo);
+            cropPhoto(photoUri);
+//            Bundle extras = data.getExtras();
+//            Bitmap photo = (Bitmap)extras.get("data");
+//            ib.setImageBitmap(photo);
+//            imageTaken = true;
+//            saveProfiletoDB(photo);
+        }
+        else if (requestCode == IMAGE_CROP_REQUEST && resultCode == Activity.RESULT_OK) {
+            File file = new File(photoOutputUri.getPath());
+            if(file.exists()) {
+                Log.v("capture", "onActivityResult" + photoOutputUri.getPath());
+                Bitmap photo = BitmapFactory.decodeFile(photoOutputUri.getPath());
+                ib.setImageBitmap(photo);
+                imageTaken = true;
+                saveProfiletoDB(photo);
+            } else {
+                Toast.makeText(this, "Image not found!", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

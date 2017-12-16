@@ -11,12 +11,14 @@
         android:orientation="horizontal">
 
         <TextView
+            style="@style/ListFont.subTitle"
             android:id="@+id/listcontent_index"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text=" " />
 
         <TextView
+            style="@style/ListFont.subTitle"
             android:id="@+id/listcontent_content"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"

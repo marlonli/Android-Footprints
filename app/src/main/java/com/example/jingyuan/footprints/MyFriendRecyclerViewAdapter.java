@@ -84,7 +84,7 @@ public class MyFriendRecyclerViewAdapter extends RecyclerView.Adapter<MyFriendRe
         holder.username.setText(friends.get(position).getUsername());
 //        if (friends.get(position).getProfile() != null)
 //            holder.profile.setImageBitmap(friends.get(position).getProfile());
-        if(friends.get(position).getProfileByteArray() != null) {
+        if(friends.get(position).getProfileByteArray().length > 0) {
             Bitmap myProfile = BitmapFactory.decodeByteArray(friends.get(position).getProfileByteArray(), 0, friends.get(position).getProfileByteArray().length);
             holder.profile.setImageBitmap(myProfile);
         }
