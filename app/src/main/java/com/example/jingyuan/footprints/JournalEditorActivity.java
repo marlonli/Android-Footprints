@@ -153,6 +153,22 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
+                ArrayList<String> tags_tmp = journal.getTags();
+                list_Of_Map.clear();
+                if (tags_tmp!=null){
+                    tags = tags_tmp;
+                    int size = tags.size();
+                    list_Of_Num.clear();
+                    for(int i = 0; i < size; i++){
+                        list_Of_Num.add(Integer.toString(i+1)+".");
+                    }
+                    for (int i = 0; i < tags.size(); i++) {
+                        Map<String, Object> listem = new HashMap<String, Object>();
+                        listem.put("index", list_Of_Num.get(i));
+                        listem.put("tag", tags.get(i));
+                        list_Of_Map.add(listem);
+                    }
+                }
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
@@ -177,13 +193,6 @@ public class JournalEditorActivity extends AppCompatActivity {
                                         String str_size = Integer.toString(size)+".";
                                         Log.i("fdsd",str_size);
                                         list_Of_Num.add(str_size);
-                                        list_Of_Map.clear();
-                                        for (int i = 0; i < tags.size(); i++) {
-                                            Map<String, Object> listem = new HashMap<String, Object>();
-                                            listem.put("index", list_Of_Num.get(i));
-                                            listem.put("tag", tags.get(i));
-                                            list_Of_Map.add(listem);
-                                        }
                                     }
                                 }).setNegativeButton("Cancel", null).create().show();
             }
