@@ -29,7 +29,7 @@
                 <TextView
                     android:id="@+id/list_title"
                     android:layout_width="0dp"
-                    android:layout_height="24dp"
+                    android:layout_height="28dp"
                     android:layout_marginRight="@dimen/text_margin"
                     android:text="Title"
                     style="@style/ListFont.Title"
