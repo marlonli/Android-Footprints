@@ -216,8 +216,11 @@ public class JournalFragment extends Fragment {
                 itemView.setText(R.id.list_content, j.getContent());
                 String loc = latLngToLoc(j.getLat(), j.getLng());
                 itemView.setText(R.id.list_location, loc);
-//                String tags_tmp = journals.get(position).getTags().toSt
-//                itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
+                ArrayList<String> tags_tmp =  journals.get(position).getTags();
+                if (tags_tmp!=null) {
+                    String tags = tags_tmp.toString();
+                    itemView.setText(R.id.list_tag, tags.substring(1, tags.length() - 1));
+                }
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
                 itemView.setText(R.id.list_date, j.getDateTimeString().toString().split(" ")[2]);
                 itemView.setOnClickListener(R.id.rightMenu_delete, new View.OnClickListener() {
