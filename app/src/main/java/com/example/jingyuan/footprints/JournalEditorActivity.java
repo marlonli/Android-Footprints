@@ -145,8 +145,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         getCurrentLocation();
         ShowAddress();
 
-        getCurrentLocation();
-        ShowAddress();
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -164,18 +162,12 @@ public class JournalEditorActivity extends AppCompatActivity {
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
-                if(journal != null) {
-                    tags_from_db = journal.getTags();
-                }
                 list_Of_Map.clear();
-                if(tags_from_db != null) {
-                    tags = tags_from_db;
+                if(tags != null) {
                     for(int i = 0; i < tags.size(); i++) {
                         String str_size = Integer.toString(i + 1)+".";
                         list_Of_Num.add(str_size);
                     }
-                }
-                if(tags.size() != 0) {
                     for (int i = 0; i < tags.size(); i++) {
                         Map<String, Object> listem = new HashMap<String, Object>();
                         listem.put("index", list_Of_Num.get(i));
@@ -374,6 +366,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private void saveImage(String imagePath){
         if (imagePath != null) {
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            Log.i("aaaaaa","fffff");
             photos.add(bitmap);
         }
     }
@@ -390,8 +383,23 @@ public class JournalEditorActivity extends AppCompatActivity {
         mResultReceiver = new AddressResultReceiver(new Handler());
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
-        photos = new ArrayList<>();
-        tags = new ArrayList<>();
+        if(journal != null){
+            ArrayList<Bitmap> photos_tep = journal.getPhotos();
+            if(photos_tep != null)
+                photos = photos_tep;
+        }
+        else
+            photos = new ArrayList<>();
+        if(journal != null) {
+            tags_from_db = journal.getTags();
+            if(tags_from_db != null)
+                tags = tags_from_db;
+            else {
+                tags = new ArrayList<>();
+            }
+        } else {
+            tags = new ArrayList<>();
+        }
         list_Of_Num = new ArrayList<>();
         list_Of_Map = new ArrayList<>();
     }
