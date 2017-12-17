@@ -253,7 +253,7 @@ public class AlbumFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     for (DataSnapshot snap:dataSnapshot.getChildren()){
                         String key = snap.getKey();
-                        ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                        ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
                         Utilities u = new Utilities();
                         if (photo_string!=null){
                             String photo_string_one = photo_string.get(0);
@@ -354,7 +354,7 @@ class AlbumAdapter extends BaseAdapter {
             String image_string = song.get(Utilities.KEY_BYTE);
             byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
             Glide.with(activity)
-                    .load(image_byte) // Uri of the picture
+                    .load(image_string)
                     .into(holder.galleryImage);
 
 

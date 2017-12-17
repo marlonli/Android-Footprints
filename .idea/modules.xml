@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Android-Footprints.iml" filepath="$PROJECT_DIR$/Android-Footprints.iml" />
-      <module fileurl="file://$PROJECT_DIR$/Footprints.iml" filepath="$PROJECT_DIR$/Footprints.iml" />
+      <module fileurl="file://D:\Documents\Rutgers\Git\Android-Footprints.iml" filepath="D:\Documents\Rutgers\Git\Android-Footprints.iml" />
+      <module fileurl="file://D:\Documents\Rutgers\Git\Footprints.iml" filepath="D:\Documents\Rutgers\Git\Footprints.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/Git.iml" filepath="$PROJECT_DIR$/.idea/Git.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

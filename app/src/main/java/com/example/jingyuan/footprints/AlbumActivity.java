@@ -115,7 +115,7 @@ public class AlbumActivity extends AppCompatActivity {
                     for (DataSnapshot snap:dataSnapshot.getChildren()){
                         String key = snap.getKey();
                         if(key.equals(album_name)) {
-                            ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                            ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
                             Utilities u = new Utilities();
                             if (photo_string != null) {
                                 image_list = photo_string;
