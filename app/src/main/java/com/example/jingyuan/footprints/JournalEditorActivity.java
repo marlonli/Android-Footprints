@@ -382,7 +382,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
     }
 
-    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+    public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
         ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
         for (int i=0;i<photo_string.size();i++){
             String photo_string_tmp = photo_string.get(i);
@@ -408,9 +408,10 @@ public class JournalEditorActivity extends AppCompatActivity {
         mAddressOutput = "";
         if(journal != null){
             ArrayList<String> photos_string_tep = journal.getPhotos();
-            ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-            if(photos_tep != null)
+            if(photos_string_tep != null) {
+                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
                 photos = photos_tep;
+            }
         }
         else
             photos = new ArrayList<>();
