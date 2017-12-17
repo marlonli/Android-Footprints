@@ -434,6 +434,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
                             currentLatitude = mLastLocation.getLatitude();
                             currentLongitude = mLastLocation.getLongitude();
+                            Log.v("JournalEditor status", "lat: " + currentLatitude + ", lng: " + currentLongitude);
                         } else {
                             Log.w(TAG, "getLastLocation:exception", task.getException());
                         }
