@@ -381,7 +381,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
 
 
-    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+    public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
         ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
         for (int i=0;i<photo_string.size();i++){
             String photo_string_tmp = photo_string.get(i);
@@ -410,9 +410,9 @@ public class JournalEditorActivity extends AppCompatActivity {
         if(journal != null){
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
-            if (journal.getPhotos() != null) {
-                ArrayList<String> photos_string_tep = new ArrayList<>();
-                photos_string_tep.addAll(journal.getPhotos());
+
+            ArrayList<String> photos_string_tep = journal.getPhotos();
+            if(photos_string_tep != null) {
                 ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
                 photos = photos_tep;
                 Log.v("images", "add image: " + photos.size());
@@ -429,6 +429,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             else {
                 tags = new ArrayList<>();
             }
+
         }
         else {
             photos = new ArrayList<>();
