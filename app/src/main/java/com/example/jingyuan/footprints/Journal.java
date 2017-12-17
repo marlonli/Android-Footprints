@@ -23,8 +23,8 @@ class Journal implements Serializable {
     private String content;
     private ArrayList<String> photo_string;
 
-    public ArrayList<Bitmap> getPhotos() {
-        return photos;
+    public ArrayList<String> getPhotos() {
+        return photo_string;
     }
 
     public void setPhotos(ArrayList<Bitmap> photos) {
