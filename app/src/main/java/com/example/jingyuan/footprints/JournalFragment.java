@@ -293,8 +293,6 @@ public class JournalFragment extends Fragment {
     }
 
     private void read_data_from_database(final LoadDataCallback callback){
-        Log.v("Username: ", "" + username);
-//        username = "User1";
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference Users = database.getReference("New_users");
         DatabaseReference aaa = Users.child(username);

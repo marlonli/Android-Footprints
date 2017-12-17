@@ -155,9 +155,6 @@ public class JournalEditorActivity extends AppCompatActivity {
             getCurrentLocation();
             ShowAddress();
         }
-//        et_content.setMovementMethod(new ScrollingMovementMethod());
-
-
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -175,18 +172,12 @@ public class JournalEditorActivity extends AppCompatActivity {
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
-                if(journal != null) {
-                    tags_from_db = journal.getTags();
-                }
                 list_Of_Map.clear();
-                if(tags_from_db != null) {
-                    tags = tags_from_db;
+                if(tags != null) {
                     for(int i = 0; i < tags.size(); i++) {
                         String str_size = Integer.toString(i + 1)+".";
                         list_Of_Num.add(str_size);
                     }
-                }
-                if(tags.size() != 0) {
                     for (int i = 0; i < tags.size(); i++) {
                         Map<String, Object> listem = new HashMap<String, Object>();
                         listem.put("index", list_Of_Num.get(i));
@@ -270,7 +261,9 @@ public class JournalEditorActivity extends AppCompatActivity {
                     // Update the new journal
                     ArrayList<String> photo_string = photo_to_string(photos);
                     journal.setPhoto_string(photo_string);
-                    journal.setTags(tags);
+                    if (tags.size()!=0 && tags!=journal.getTags()){
+                        journal.setTags(tags);
+                    }
                     String title_new = et_title.getText().toString();
                     String content_new = et_content.getText().toString();
                     journal.setContent(content_new);
@@ -280,7 +273,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     final DatabaseReference Users = database.getReference("New_users");
 //                    DatabaseReference AAA = Users.child(username).child("journal_list");
-                    Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
+                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
@@ -289,6 +282,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                                     Map<String,Object> UP = new HashMap<>();
                                     UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
+                                    finish();
+                                    break;
                                 }
                             }
                         }
@@ -335,9 +330,10 @@ public class JournalEditorActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent intent) {
         if (requestCode == REQ_CODE_TAKE_PICTURE
-                && resultCode == RESULT_OK) {
-            bmp = (Bitmap) intent.getExtras().get("data");
-            photos.add(bmp);
+                && resultCode == RESULT_OK && intent != null) {
+            Bitmap  photo = intent.getParcelableExtra("data");
+            photos.add(photo);
+            Log.e("photo","take picture success");
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
@@ -351,7 +347,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         if(DocumentsContract.isDocumentUri(this,uri)) {
             String docId = DocumentsContract.getDocumentId(uri);
             if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                //解析出数字格式的id
                 String id = docId.split(":")[1];
                 String selection = MediaStore.Images.Media._ID + "=" + id;
                 imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
@@ -359,10 +354,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                 Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
                 imagePath = getImagePath(contentUri,null);
             }else if ("content".equalsIgnoreCase(uri.getScheme())) {
-                //如果是content类型的uri，则使用普通方式处理
                 imagePath = getImagePath(uri,null);
             }else if ("file".equalsIgnoreCase(uri.getScheme())) {
-                //如果是file类型的uri，直接获取图片路径即可
                 imagePath = uri.getPath();
             }
             saveImage(imagePath);
@@ -384,6 +377,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private void saveImage(String imagePath){
         if (imagePath != null) {
             Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            Log.i("aaaaaa","fffff");
             photos.add(bitmap);
         }
     }
@@ -401,8 +395,23 @@ public class JournalEditorActivity extends AppCompatActivity {
         mResultReceiver = new AddressResultReceiver(new Handler());
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
-        photos = new ArrayList<>();
-        tags = new ArrayList<>();
+        if(journal != null){
+            ArrayList<Bitmap> photos_tep = journal.getPhotos();
+            if(photos_tep != null)
+                photos = photos_tep;
+        }
+        else
+            photos = new ArrayList<>();
+        if(journal != null) {
+            tags_from_db = journal.getTags();
+            if(tags_from_db != null)
+                tags = tags_from_db;
+            else {
+                tags = new ArrayList<>();
+            }
+        } else {
+            tags = new ArrayList<>();
+        }
         list_Of_Num = new ArrayList<>();
         list_Of_Map = new ArrayList<>();
     }
@@ -445,7 +454,9 @@ public class JournalEditorActivity extends AppCompatActivity {
                         }
                         mLastLocation = location;
                         // Determine whether a Geocoder is available.
-
+                        if (!Geocoder.isPresent()) {
+                            return;
+                        }
                         startIntentService();
                     }
                 })
