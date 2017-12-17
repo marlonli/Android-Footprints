@@ -372,6 +372,17 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
     }
 
+    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+        for (int i=0;i<photo_string.size();i++){
+            String photo_string_tmp = photo_string.get(i);
+            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+            photo_bit.add(photo_bit_tmp);
+        }
+        return photo_bit;
+    }
+
     private void initialization() {
         et_title = (EditText) findViewById(R.id.editText_title);
         et_content = (EditText) findViewById(R.id.editText_content);
@@ -385,7 +396,8 @@ public class JournalEditorActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
         if(journal != null){
-            ArrayList<Bitmap> photos_tep = journal.getPhotos();
+            ArrayList<String> photos_string_tep = journal.getPhotos();
+            ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
             if(photos_tep != null)
                 photos = photos_tep;
         }
