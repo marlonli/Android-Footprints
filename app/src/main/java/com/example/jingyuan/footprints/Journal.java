@@ -43,7 +43,7 @@ class Journal implements Serializable {
         this.content = content;
         this.dateTime = currentTime;
         this.photos = new ArrayList<>();
-
+        this.photo_string = new ArrayList<>();
     }
 
     public Journal(String title, long currentTime, String lat, String lng) {
@@ -54,7 +54,7 @@ class Journal implements Serializable {
         this.content = "";
         this.dateTime = currentTime;
         this.photos = new ArrayList<>();
-
+        this.photo_string = new ArrayList<>();
     }
 
     public long get_id() {
