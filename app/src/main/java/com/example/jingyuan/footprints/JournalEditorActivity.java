@@ -416,8 +416,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
         return photo_bit;
     }
-
-<<<<<<< HEAD
+    
     private void initialization() {
         et_title = (EditText) findViewById(R.id.editText_title);
         et_content = (EditText) findViewById(R.id.editText_content);
