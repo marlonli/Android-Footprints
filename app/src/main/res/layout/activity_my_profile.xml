@@ -59,21 +59,37 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/textView_edit"
-            android:textColor="@color/colorPrimary"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="0dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="0dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="bottom"
-            android:text="Reset Password"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textView_username"
-            app:layout_constraintTop_toTopOf="parent" />
+        <!--<ImageButton-->
+            <!--android:id="@+id/imageButton_reset_password"-->
+            <!--android:src="@drawable/ic_settings_black_24dp"-->
+            <!--android:layout_width="24dp"-->
+            <!--android:layout_height="24dp"-->
+            <!--android:background="@android:color/transparent"-->
+            <!--android:layout_marginBottom="0dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:layout_marginTop="0dp"-->
+            <!--android:clickable="true"-->
+            <!--android:focusable="true"-->
+            <!--android:gravity="bottom"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintStart_toEndOf="@+id/textView_username"-->
+            <!--app:layout_constraintTop_toTopOf="parent"/>-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/textView_edit"-->
+            <!--android:textColor="@color/colorPrimary"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="match_parent"-->
+            <!--android:layout_marginBottom="0dp"-->
+            <!--android:layout_marginStart="8dp"-->
+            <!--android:layout_marginTop="0dp"-->
+            <!--android:clickable="true"-->
+            <!--android:focusable="true"-->
+            <!--android:gravity="bottom"-->
+            <!--android:text="Reset Password"-->
+            <!--app:layout_constraintBottom_toBottomOf="parent"-->
+            <!--app:layout_constraintStart_toEndOf="@+id/textView_username"-->
+            <!--app:layout_constraintTop_toTopOf="parent" />-->
 
     </android.support.constraint.ConstraintLayout>
 

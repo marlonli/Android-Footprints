@@ -33,6 +33,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
@@ -87,6 +88,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private Bitmap bmp;
     private TextView tv_address;
     private ListView lv_of_tag;
+    private HorizontalScrollView scrollView_buttons;
 
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
@@ -126,9 +128,15 @@ public class JournalEditorActivity extends AppCompatActivity {
 
         // TODO: edit journal if j != null
         Log.v("Journal Editor", "journal: " + journal);
-        if (journal != null) {
+        if (journal != null) { // edit existing journal
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
+//            String lat = journal.getLat();
+//            String lng = journal.getLng();
+//            mLastLocation.setLatitude(Double.valueOf(lat));
+//            mLastLocation.setLongitude(Double.valueOf(lng));
+//            // set Address
+//            startIntentService();
         }
 
         // Set edit mode or read mode
@@ -140,11 +148,16 @@ public class JournalEditorActivity extends AppCompatActivity {
             ib_photos.setEnabled(false);
             ib_save.setEnabled(false);
             ib_tags.setEnabled(false);
+            tv_address.setVisibility(View.GONE);
+            scrollView_buttons.setVisibility(View.GONE);
+        }
+        else {
+            getCurrentLocation();
+            ShowAddress();
         }
 //        et_content.setMovementMethod(new ScrollingMovementMethod());
 
-        getCurrentLocation();
-        ShowAddress();
+
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -384,6 +397,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
         ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
         tv_address = (TextView) findViewById(R.id.tv_location);
+        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
         mResultReceiver = new AddressResultReceiver(new Handler());
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";

@@ -220,7 +220,8 @@ public class JournalFragment extends Fragment {
                             }
                         });
                 itemView.setText(R.id.list_content, j.getContent());
-                String loc = latLngToLoc(j.getLat(), j.getLng());
+                String loc = Utilities.latLngToLoc(getActivity(), j.getLat(), j.getLng());
+//                String loc = latLngToLoc(j.getLat(), j.getLng());
                 itemView.setText(R.id.list_location, loc);
                 ArrayList<String> tags_tmp =  journals.get(position).getTags();
                 if (tags_tmp!=null) {
