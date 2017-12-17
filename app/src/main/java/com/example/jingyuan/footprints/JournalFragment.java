@@ -46,6 +46,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.wyh.slideAdapter.ItemBind;
 import com.wyh.slideAdapter.ItemView;
 import com.wyh.slideAdapter.SlideAdapter;
+import com.wyh.slideAdapter.SlideLayout;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -174,6 +175,8 @@ public class JournalFragment extends Fragment {
                         .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
                         .bind(itemBind)
                         .into(mRecyclerView);
+                Log.v("JournalFragment status", "loadFinish!!!!!!!!!");
+                sortList();
             }
         });
 //        addTestData();
@@ -230,23 +233,31 @@ public class JournalFragment extends Fragment {
                     @Override
                     public void onClick(View view) {
                         // onClick delete
-                        Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
 
                         // Delete the corresponding journal from the database.
                         FirebaseDatabase database = FirebaseDatabase.getInstance();
                         final DatabaseReference Users = database.getReference("New_users");
                         DatabaseReference journal_listener = Users.child(username).child("journal_list");
                         journal_listener.addValueEventListener(new ValueEventListener() {
+                            String real_title = journals.get(position).getTitle();
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                // delete from database
                                 for (DataSnapshot snap:dataSnapshot.getChildren()){
                                     String key_title = snap.getKey();
-                                    String real_title = journals.get(position).getTitle();
                                     if (key_title.equals(real_title)){
                                         Users.child(username).child("journal_list").child(key_title).removeValue();
+                                        // delete from local list
+                                        journals.remove(position);
                                         break;
                                     }
                                 }
+
+
+
+                                // update list
+//                                updateList();
                             }
 
                             @Override
@@ -265,16 +276,19 @@ public class JournalFragment extends Fragment {
             }
         };
 
-        SlideAdapter.load(journals)
-                .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
-                .bind(itemBind)
-                .into(mRecyclerView);
+//        updateList();
+
 
 //        SwipeController swipeController = new SwipeController();
 //        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
 //        itemTouchhelper.attachToRecyclerView(mRecyclerView);
 
         return v;
+    }
+
+    private void updateList() {
+        mRecyclerView.getAdapter().notifyDataSetChanged();
+
     }
 
     private void read_data_from_database(final LoadDataCallback callback){
@@ -305,6 +319,7 @@ public class JournalFragment extends Fragment {
 
                     journals.add(journal);
                 }
+//                updateList();
                 callback.loadFinish();
             }
 
@@ -313,6 +328,11 @@ public class JournalFragment extends Fragment {
 
             }
         });
+    }
+
+
+    private void sortList() {
+        Collections.sort(journals, new JournalsComparator());
     }
 
     private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
