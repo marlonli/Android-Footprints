@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,8 +19,14 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -30,8 +37,10 @@ public class AlbumActivity extends AppCompatActivity {
 
     GridView galleryGridView;
     ArrayList<HashMap<String, String>> imageList = new ArrayList<HashMap<String, String>>();
-    String album_name = "";
+    ArrayList<String> image_list = new ArrayList<>();
+    public String album_name = "";
     LoadAlbumImages loadAlbumTask;
+    public String username = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +49,7 @@ public class AlbumActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         album_name = intent.getStringExtra("name");
+        username = intent.getStringExtra("username");
         setTitle(album_name);
 
 
@@ -71,52 +81,89 @@ public class AlbumActivity extends AppCompatActivity {
         protected String doInBackground(String... args) {
             String xml = "";
 
-            String path = null;
-            String album = null;
-            String timestamp = null;
-            Uri uriExternal = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            Uri uriInternal = android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+//            String path = null;
+//            String album = null;
+//            String timestamp = null;
+//            Uri uriExternal = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+//            Uri uriInternal = android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+//
+//            String[] projection = { MediaStore.MediaColumns.DATA,
+//                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DATE_MODIFIED };
+//
+//            Cursor cursorExternal = getContentResolver().query(uriExternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
+//            Cursor cursorInternal = getContentResolver().query(uriInternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
+//            Cursor cursor = new MergeCursor(new Cursor[]{cursorExternal,cursorInternal});
+//            while (cursor.moveToNext()) {
+//
+//                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+//                album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
+//                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
+//
+//                imageList.add(Utilities.mappingInbox(album, path, timestamp, Utilities.converToTime(timestamp), null));
+//            }
+//            cursor.close();
+//            Collections.sort(imageList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
 
-            String[] projection = { MediaStore.MediaColumns.DATA,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DATE_MODIFIED };
 
-            Cursor cursorExternal = getContentResolver().query(uriExternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
-            Cursor cursorInternal = getContentResolver().query(uriInternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
-            Cursor cursor = new MergeCursor(new Cursor[]{cursorExternal,cursorInternal});
-            while (cursor.moveToNext()) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            final DatabaseReference Users = database.getReference("New_users");
+            DatabaseReference aaa = Users.child(username);
+            DatabaseReference bbb = aaa.child("journal_list");
+            bbb.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snap:dataSnapshot.getChildren()){
+                        String key = snap.getKey();
+                        if(key.equals(album_name)) {
+                            ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                            Utilities u = new Utilities();
+                            if (photo_string != null) {
+                                image_list = photo_string;
+                            } else {
+                                image_list = null;
+                            }
+                            break;
+                        }
+                    }
 
-                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-                album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
-                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
+                }
 
-                imageList.add(Utilities.mappingInbox(album, path, timestamp, Utilities.converToTime(timestamp), null));
-            }
-            cursor.close();
-            Collections.sort(imageList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
             return xml;
         }
 
         @Override
         protected void onPostExecute(String xml) {
 
-            SingleAlbumAdapter adapter = new SingleAlbumAdapter(AlbumActivity.this, imageList);
-            galleryGridView.setAdapter(adapter);
-            galleryGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                public void onItemClick(AdapterView<?> parent, View view,
-                                        final int position, long id) {
-                    Intent intent = new Intent(AlbumActivity.this, GalleryPreview.class);
-                    intent.putExtra("path", imageList.get(+position).get(Utilities.KEY_PATH));
-                    startActivity(intent);
-                }
-            });
+            if (image_list == null) {
+                Toast.makeText(getApplicationContext(), "No photos in this ablum.", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                SingleAlbumAdapter adapter = new SingleAlbumAdapter(AlbumActivity.this, image_list);
+                galleryGridView.setAdapter(adapter);
+                galleryGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> parent, View view,
+                                            final int position, long id) {
+
+                        Intent intent = new Intent(AlbumActivity.this, GalleryPreview.class);
+                        intent.putExtra("image_name", image_list.get(+position));
+                        startActivity(intent);
+                    }
+                });
+            }
         }
     }
 }
 
 class SingleAlbumAdapter extends BaseAdapter {
     private Activity activity;
-    private ArrayList<HashMap< String, String >> data;
-    public SingleAlbumAdapter(Activity a, ArrayList < HashMap < String, String >> d) {
+    private ArrayList<String > data;
+    public SingleAlbumAdapter(Activity a, ArrayList <String> d) {
         activity = a;
         data = d;
     }
@@ -145,12 +192,14 @@ class SingleAlbumAdapter extends BaseAdapter {
         }
         holder.galleryImage.setId(position);
 
-        HashMap < String, String > song = new HashMap < String, String > ();
-        song = data.get(position);
+        String song = "";
         try {
-
+            if (data!=null) {
+                song = data.get(position);
+            }
+            byte[] image_byte = Base64.decode(song,Base64.DEFAULT);
             Glide.with(activity)
-                    .load(new File(song.get(Utilities.KEY_PATH))) // Uri of the picture
+                    .load(image_byte) // Uri of the picture
                     .into(holder.galleryImage);
 
 
