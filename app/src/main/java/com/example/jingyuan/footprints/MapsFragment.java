@@ -3,6 +3,7 @@ package com.example.jingyuan.footprints;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -26,6 +27,12 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.wyh.slideAdapter.SlideAdapter;
 
 import java.util.ArrayList;
 
@@ -46,7 +53,7 @@ public class MapsFragment extends Fragment {
     private static final int LOC_PERMISSION_REQUEST_CODE = 10;
 
     private String username;
-    private ArrayList<Journal> journals;
+    private ArrayList<String> markers;
 
     private OnFragmentInteractionListener mListener;
 
@@ -89,6 +96,7 @@ public class MapsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_maps, container, false);
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+        markers = new ArrayList<>();
 
         mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
@@ -100,7 +108,13 @@ public class MapsFragment extends Fragment {
             e.printStackTrace();
         }
 
-        // Get permission
+        // read data
+        read_data_from_database(new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                Log.v("MapsFragment status", "loadFinish!");
+            }
+        });
 
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
@@ -135,8 +149,7 @@ public class MapsFragment extends Fragment {
                         }
                     }
 
-                    // TODO: get journals: journals = ??
-//                    setMarkers();
+                    setMarkers();
                 }
 
                 // For dropping a marker at a point on the Map
@@ -155,16 +168,42 @@ public class MapsFragment extends Fragment {
     }
 
     private void setMarkers() {
-        // TODO: set markers
-        if (journals.size() != 0)
-            for (Journal j : journals) {
-                LatLng pnt = new LatLng(Double.valueOf(j.getLat()), Double.valueOf(j.getLng()));
+        if (markers.size() != 0)
+            for (String latlng : markers) {
+                String[] coordination = latlng.split(",");
+                LatLng pnt = new LatLng(Double.valueOf(coordination[0]), Double.valueOf(coordination[1]));
                 Marker mPoint = googleMap.addMarker(new MarkerOptions()
                         .position(pnt)
 //                        .title(j.getTitle())
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_maps_marker)));
 //                mPoint.setTag(0);
             }
+    }
+
+    private void read_data_from_database(final LoadDataCallback callback){
+        Log.v("Username: ", "" + username);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference Users = database.getReference("New_users");
+        DatabaseReference aaa = Users.child(username);
+        DatabaseReference bbb = aaa.child("journal_list");
+        bbb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                markers.clear();
+                for (DataSnapshot snap:dataSnapshot.getChildren()){
+                    String key = snap.getKey();
+                    String lat = (String) snap.child("lat").getValue();
+                    String lng = (String) snap.child("lng").getValue();
+                    markers.add(lat + "," + lng);
+                }
+                callback.loadFinish();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     // TODO: Rename method, update argument and hook method into UI event

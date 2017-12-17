@@ -49,7 +49,7 @@
         android:layout_marginBottom="@dimen/fab_bottom_margin"
         app:fabSize="normal"
         app:layout_scrollFlags="scroll|enterAlways|snap"
-        android:src="@drawable/ic_mode_edit_black_24dp"
+        android:src="@drawable/ic_mode_edit_white_24dp"
         /> />
 
 
