@@ -5,6 +5,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
@@ -153,6 +155,21 @@ public class JournalEditorActivity extends AppCompatActivity {
                 LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
                 view = factory.inflate(R.layout.tag_window, null);
                 final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
+                ArrayList<String> tags_tem = journal.getTags();
+                list_Of_Map.clear();
+                if(tags_tem != null) {
+                    tags = tags_tem;
+                    for(int i = 0; i < tags.size(); i++) {
+                        String str_size = Integer.toString(tags.size())+".";
+                        list_Of_Num.add(str_size);
+                    }
+                    for (int i = 0; i < tags.size(); i++) {
+                        Map<String, Object> listem = new HashMap<String, Object>();
+                        listem.put("index", list_Of_Num.get(i));
+                        listem.put("tag", tags.get(i));
+                        list_Of_Map.add(listem);
+                    }
+                }
                 if(tags.size() != 0) {
                     simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
                             new String[]{"index", "tag"}, new int[]{
@@ -174,13 +191,6 @@ public class JournalEditorActivity extends AppCompatActivity {
                                         String str_size = Integer.toString(size)+".";
                                         Log.i("fdsd",str_size);
                                         list_Of_Num.add(str_size);
-                                        list_Of_Map.clear();
-                                        for (int i = 0; i < tags.size(); i++) {
-                                            Map<String, Object> listem = new HashMap<String, Object>();
-                                            listem.put("index", list_Of_Num.get(i));
-                                            listem.put("tag", tags.get(i));
-                                            list_Of_Map.add(listem);
-                                        }
                                     }
                                 }).setNegativeButton("Cancel", null).create().show();
             }
@@ -291,22 +301,51 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-//            Uri selectedImage = intent.getData();
-//            String[] filePathColumns = {MediaStore.Images.Media.DATA};
-//            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
-//            c.moveToFirst();
-//            int columnIndex = c.getColumnIndex(filePathColumns[0]);
-//            String imagePath = c.getString(columnIndex);
-//            saveImage(imagePath);
-//            c.close();
-            bmp = (Bitmap) intent.getExtras().get("data");
-            photos.add(bmp);
+            handleImageOnKitKat(intent);
         }
     }
 
-    private void saveImage(String imaePath){
-        Bitmap bm = BitmapFactory.decodeFile(imaePath);
-        //save the bm in db
+    private void handleImageOnKitKat(Intent intent) {
+        String imagePath = null;
+        Uri uri = intent.getData();
+        if(DocumentsContract.isDocumentUri(this,uri)) {
+            String docId = DocumentsContract.getDocumentId(uri);
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                //解析出数字格式的id
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
+            }else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
+                imagePath = getImagePath(contentUri,null);
+            }else if ("content".equalsIgnoreCase(uri.getScheme())) {
+                //如果是content类型的uri，则使用普通方式处理
+                imagePath = getImagePath(uri,null);
+            }else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                //如果是file类型的uri，直接获取图片路径即可
+                imagePath = uri.getPath();
+            }
+            saveImage(imagePath);
+        }
+    }
+
+    private String getImagePath(Uri uri,String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
+    }
+
+    private void saveImage(String imagePath){
+        if (imagePath != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            photos.add(bitmap);
+        }
     }
 
     private void initialization() {
