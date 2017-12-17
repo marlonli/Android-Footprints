@@ -347,7 +347,7 @@ public class FriendsFragment extends Fragment {
 //                me.setProfile(u.getProfile());
                     Log.v("FrendsFragment status", "username: " + u.getUsername());
                     //me.setUsername(u.getUsername());
-                    friends.set(0, u);
+                    //friends.set(0, u);
                     mAdapter.notifyDataSetChanged();
                 }
             }

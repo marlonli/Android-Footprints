@@ -106,7 +106,9 @@
         tools:layout_editor_absoluteY="0dp"
         tools:layout_editor_absoluteX="8dp">
 
-        <LinearLayout android:orientation="horizontal"
+        <LinearLayout
+            android:id="@+id/bottom_container"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -178,7 +180,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:hint="Your address could be shown here"
+        android:hint=" "
         app:layout_constraintBottom_toTopOf="@id/scrollView_tools"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.025"

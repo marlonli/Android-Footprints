@@ -79,7 +79,7 @@ public class Utilities {
         return cursor.getCount()+" Photos";
     }
 
-    public String latLngToLoc(Activity activity, String lat, String lng) {
+    public static String latLngToLoc(Activity activity, String lat, String lng) {
         String loc = null;
         if (lat == null || lng == null)
             return loc;

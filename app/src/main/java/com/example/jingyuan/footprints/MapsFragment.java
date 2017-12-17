@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -22,6 +24,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
@@ -34,6 +37,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.wyh.slideAdapter.SlideAdapter;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 
@@ -54,6 +58,7 @@ public class MapsFragment extends Fragment {
 
     private String username;
     private ArrayList<String> markers;
+    private ArrayList<Journal> journals;
 
     private OnFragmentInteractionListener mListener;
 
@@ -97,6 +102,7 @@ public class MapsFragment extends Fragment {
 
         locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
         markers = new ArrayList<>();
+        journals = new ArrayList<>();
 
         mMapView = (MapView) v.findViewById(R.id.mapView);
         mMapView.onCreate(savedInstanceState);
@@ -108,13 +114,7 @@ public class MapsFragment extends Fragment {
             e.printStackTrace();
         }
 
-        // read data
-        read_data_from_database(new LoadDataCallback() {
-            @Override
-            public void loadFinish() {
-                Log.v("MapsFragment status", "loadFinish!");
-            }
-        });
+
 
 
         mMapView.getMapAsync(new OnMapReadyCallback() {
@@ -149,7 +149,19 @@ public class MapsFragment extends Fragment {
                         }
                     }
 
-                    setMarkers();
+                    // read data
+                    read_data_from_database(new LoadDataCallback() {
+                        @Override
+                        public void loadFinish() {
+                            setMarkers();
+                            Log.v("MapsFragment status", "loadFinish!");
+                            Log.v("MapsFragment status", "journals.size(): " + journals.size());
+
+                        }
+                    });
+
+                    Log.v("MapsFragment status", "OnMapReady");
+
                 }
 
                 // For dropping a marker at a point on the Map
@@ -168,14 +180,15 @@ public class MapsFragment extends Fragment {
     }
 
     private void setMarkers() {
-        if (markers.size() != 0)
-            for (String latlng : markers) {
-                String[] coordination = latlng.split(",");
-                LatLng pnt = new LatLng(Double.valueOf(coordination[0]), Double.valueOf(coordination[1]));
+        if (journals.size() != 0)
+            for (Journal j : journals) {
+                LatLng pnt = new LatLng(Double.valueOf(j.getLat()), Double.valueOf(j.getLng()));
                 Marker mPoint = googleMap.addMarker(new MarkerOptions()
                         .position(pnt)
-//                        .title(j.getTitle())
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_maps_marker)));
+                        .title(j.getTitle())
+//                        .icon(getMarkerIconFromDrawable(getResources().getDrawable(R.drawable.ic_maps_marker))));
+                        .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN)));
+
 //                mPoint.setTag(0);
             }
     }
@@ -189,13 +202,29 @@ public class MapsFragment extends Fragment {
         bbb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                markers.clear();
+                journals.clear();
                 for (DataSnapshot snap:dataSnapshot.getChildren()){
+                    Log.v("MapsFragment status", "add journal");
                     String key = snap.getKey();
+                    String title = (String) snap.child("title").getValue();
+                    long dateTimeLong = (long) snap.child("dateTimeLong").getValue();
                     String lat = (String) snap.child("lat").getValue();
                     String lng = (String) snap.child("lng").getValue();
-                    markers.add(lat + "," + lng);
+                    Journal journal = new Journal(title, dateTimeLong,lat,lng);
+                    journals.add(journal);
                 }
+
+
+
+
+
+//                markers.clear();
+//                for (DataSnapshot snap:dataSnapshot.getChildren()){
+//                    String key = snap.getKey();
+//                    String lat = (String) snap.child("lat").getValue();
+//                    String lng = (String) snap.child("lng").getValue();
+//                    markers.add(lat + "," + lng);
+//                }
                 callback.loadFinish();
             }
 
@@ -204,6 +233,15 @@ public class MapsFragment extends Fragment {
 
             }
         });
+    }
+
+    private BitmapDescriptor getMarkerIconFromDrawable(Drawable drawable) {
+        Canvas canvas = new Canvas();
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        canvas.setBitmap(bitmap);
+        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+        drawable.draw(canvas);
+        return BitmapDescriptorFactory.fromBitmap(bitmap);
     }
 
     // TODO: Rename method, update argument and hook method into UI event

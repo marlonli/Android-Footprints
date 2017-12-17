@@ -23,8 +23,8 @@ class Journal implements Serializable {
     private String content;
     private ArrayList<String> photo_string;
 
-    public ArrayList<Bitmap> getPhotos() {
-        return photos;
+    public ArrayList<String> getPhotos() {
+        return photo_string;
     }
 
     public void setPhotos(ArrayList<Bitmap> photos) {
@@ -41,6 +41,17 @@ class Journal implements Serializable {
         this.lat = lat;
         this.lng = lng;
         this.content = content;
+        this.dateTime = currentTime;
+        this.photos = new ArrayList<>();
+
+    }
+
+    public Journal(String title, long currentTime, String lat, String lng) {
+        this.title = title;
+        this.tags = new ArrayList<>();
+        this.lat = lat;
+        this.lng = lng;
+        this.content = "";
         this.dateTime = currentTime;
         this.photos = new ArrayList<>();
 

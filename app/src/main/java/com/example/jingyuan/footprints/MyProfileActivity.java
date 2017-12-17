@@ -4,6 +4,8 @@ import android.*;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,6 +14,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -20,12 +24,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -53,6 +61,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class MyProfileActivity extends AppCompatActivity {
@@ -80,7 +89,8 @@ public class MyProfileActivity extends AppCompatActivity {
     private TextView journalNum;
     private TextView friendsNum;
     private Toolbar myToolbar;
-    private TextView editButton;
+//    private TextView editButton;
+//    private ImageButton resetButton;
     private PopupWindow popupWindow;
     private ArrayList<Journal> journal_list;
     private ListView listView;
@@ -103,7 +113,8 @@ public class MyProfileActivity extends AppCompatActivity {
         myUsername = (TextView) findViewById(R.id.textView_username);
         journalNum = (TextView) findViewById(R.id.textView_num_journals);
         friendsNum = (TextView) findViewById(R.id.textView_num_friends);
-        editButton = (TextView) findViewById(R.id.textView_edit);
+//        editButton = (TextView) findViewById(R.id.textView_edit);
+//        resetButton = (ImageButton) findViewById(R.id.imageButton_reset_password);
         listView = (ListView) findViewById(R.id.listView_journals);
         popupWindow = null;
         journal_list = new ArrayList<>();
@@ -160,7 +171,9 @@ public class MyProfileActivity extends AppCompatActivity {
         position = intent.getIntExtra(PERSON_POSITION, 0);
         if (position != 0) {
 //            myUsername.setEnabled(false);
-            editButton.setText("");
+//            resetButton.setClickable(false);
+//            resetButton.setEnabled(false);
+//            resetButton.setVisibility(View.GONE);
             ib.setClickable(false);
             ib.setEnabled(false);
 
@@ -169,7 +182,7 @@ public class MyProfileActivity extends AppCompatActivity {
             listView.setAdapter(mAdapter);
 
         } else {
-            editButton.setText("Edit");
+
         }
         Log.v("MyProfile status", "position: " + position);
 
@@ -182,40 +195,39 @@ public class MyProfileActivity extends AppCompatActivity {
                 // TODO: open photo lib (or camera)
                 if(!imageTaken) {
                     // open camera
-//                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-//                    startActivityForResult(cameraIntent, IMAGE_CAPTURE_REQUEST);
+                    Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    startActivityForResult(cameraIntent, IMAGE_CAPTURE_REQUEST);
 //                    startCamera();
-                    openOptionsMenu();
+//                    openOptionsMenu();
                 }
             }
         });
 
         // Edit password
-        editButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                LayoutInflater factory = LayoutInflater.from(MyProfileActivity.this);
-                view = factory.inflate(R.layout.popup_edit_username, null);
-                final EditText newPassword = (EditText) view.findViewById(R.id.editText_username);
-                new AlertDialog.Builder(view.getContext())
-                        .setTitle("Edit Password")     //title
-                        .setView(view)
-                        .setPositiveButton("Confirm",
-                                new android.content.DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        //myUsername.setText(newName.getText().toString());
-                                        savePassWordtoDB(newPassword.getText().toString());
-                                    }
-                                }).setNegativeButton("Cancel", null).create().show();
-            }
-        });
+//        resetButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                LayoutInflater factory = LayoutInflater.from(MyProfileActivity.this);
+//                view = factory.inflate(R.layout.popup_edit_username, null);
+//                final EditText newPassword = (EditText) view.findViewById(R.id.editText_username);
+//                new AlertDialog.Builder(view.getContext())
+//                        .setTitle("Edit Password")     //title
+//                        .setView(view)
+//                        .setPositiveButton("Confirm",
+//                                new android.content.DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialog,
+//                                                        int which) {
+//                                        //myUsername.setText(newName.getText().toString());
+//                                        savePassWordtoDB(newPassword.getText().toString());
+//                                    }
+//                                }).setNegativeButton("Cancel", null).create().show();
+//            }
+//        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // TODO: view journal
                 openEditor(i);
             }
         });
@@ -325,6 +337,7 @@ public class MyProfileActivity extends AppCompatActivity {
                 address = (String)journal.child("address").getValue();
             String content = (String)journal.child("content").getValue();
             Journal j = new Journal(title, tags, datetime, lat, lng, content);
+            j.setAddress(Utilities.latLngToLoc(this, lat, lng));
             journal_list.add(j);
         }
     }
@@ -401,6 +414,54 @@ public class MyProfileActivity extends AppCompatActivity {
         journal_list.add(new Journal("Journal1", testTags, startDate2, "40", "-110", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
         journal_list.add(new Journal("Journal1", testTags, currentTime, "30", "-70", "In order to reuse the Fragment UI components, you should build each as a completely self-contained, modular component that defines its own layout and behavior. Once you have defined these reusable Fragments, you can associate them with an Activity and connect them with the application logic to realize the overall composite UI."));
 
+    }
+
+    // Add menu to action bar
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_profile, menu);
+
+        if (position != 0)
+        {
+            for (int i = 0; i < menu.size(); i++)
+                menu.getItem(i).setVisible(false);
+        }
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_reset_password:
+                // Reset Password
+                LayoutInflater factory = LayoutInflater.from(MyProfileActivity.this);
+                View view = factory.inflate(R.layout.popup_edit_username, null);
+                final EditText newPassword = (EditText) view.findViewById(R.id.editText_username);
+                new AlertDialog.Builder(view.getContext())
+                        .setTitle("Reset Password")     //title
+                        .setView(view)
+                        .setPositiveButton("Confirm",
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        //myUsername.setText(newName.getText().toString());
+                                        savePassWordtoDB(newPassword.getText().toString());
+                                    }
+                                }).setNegativeButton("Cancel", null).create().show();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     @Override

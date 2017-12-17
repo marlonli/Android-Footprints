@@ -33,7 +33,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -88,6 +91,8 @@ public class JournalEditorActivity extends AppCompatActivity {
     private Bitmap bmp;
     private TextView tv_address;
     private ListView lv_of_tag;
+    private HorizontalScrollView scrollView_buttons;
+    private LinearLayout bottomContainer;
 
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
@@ -122,6 +127,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         username = (String) intent.getStringExtra("username");
         editorMode =  (intent.getIntExtra(EDITOR_MODE, 10) == EDIT);
 
+
         et_title = (EditText) findViewById(R.id.editText_title);
         et_content = (EditText) findViewById(R.id.editText_content);
         ib_save = (ImageButton) findViewById(R.id.imageButton_save);
@@ -152,25 +158,19 @@ public class JournalEditorActivity extends AppCompatActivity {
         list_Of_Map = new ArrayList<>();
 
         // TODO: edit journal if j != null
-        Log.v("Journal Editor", "journal: " + journal);
-        if (journal != null) {
-            et_title.setText(journal.getTitle());
-            et_content.setText(journal.getContent());
-        }
 
-        // Set edit mode or read mode
-        if (!editorMode) {
-            et_title.setEnabled(false);
-            et_content.setKeyListener(null);
-            ib_camera.setEnabled(false);
-            ib_location.setEnabled(false);
-            ib_photos.setEnabled(false);
-            ib_save.setEnabled(false);
-            ib_tags.setEnabled(false);
-        }
-//        et_content.setMovementMethod(new ScrollingMovementMethod());
-        getCurrentLocation();
-        ShowAddress();
+        Log.v("Journal Editor", "journal: " + journal);
+//        if (journal != null) { // edit existing journal
+//            et_title.setText(journal.getTitle());
+//            et_content.setText(journal.getContent());
+////            String lat = journal.getLat();
+////            String lng = journal.getLng();
+////            mLastLocation.setLatitude(Double.valueOf(lat));
+////            mLastLocation.setLongitude(Double.valueOf(lng));
+////            // set Address
+////            startIntentService();
+//        }
+
 
 
         // Set the botton click action for location(Map) button
@@ -290,7 +290,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     final DatabaseReference Users = database.getReference("New_users");
 //                    DatabaseReference AAA = Users.child(username).child("journal_list");
-                    Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
+                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
@@ -299,6 +299,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                                     Map<String,Object> UP = new HashMap<>();
                                     UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
+                                    finish();
                                     break;
                                 }
                             }
@@ -377,6 +378,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
 
 
+<<<<<<< HEAD
 //    private void initialization() {
 //        et_title = (EditText) findViewById(R.id.editText_title);
 //        et_content = (EditText) findViewById(R.id.editText_content);
@@ -409,6 +411,80 @@ public class JournalEditorActivity extends AppCompatActivity {
 //        list_Of_Num = new ArrayList<>();
 //        list_Of_Map = new ArrayList<>();
 //    }
+=======
+    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+        for (int i=0;i<photo_string.size();i++){
+            String photo_string_tmp = photo_string.get(i);
+            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+            photo_bit.add(photo_bit_tmp);
+        }
+        return photo_bit;
+    }
+
+    private void initialization() {
+        et_title = (EditText) findViewById(R.id.editText_title);
+        et_content = (EditText) findViewById(R.id.editText_content);
+        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
+        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
+        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
+        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
+        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+        tv_address = (TextView) findViewById(R.id.tv_location);
+        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
+        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mAddressOutput = "";
+
+        if(journal != null){
+            et_title.setText(journal.getTitle());
+            et_content.setText(journal.getContent());
+            ArrayList<String> photos_string_tep = journal.getPhotos();
+            ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
+            if(photos_tep != null){
+                photos = photos_tep;
+                Log.v("images", "add image: " + photos.size());
+                for (int i = 0; i < photos.size(); i++) {
+                    ImageView image = new ImageView(this);
+                    image.setImageBitmap(photos.get(i));
+                    bottomContainer.addView(image);
+                }
+            }
+
+            tags_from_db = journal.getTags();
+            if(tags_from_db != null)
+                tags = tags_from_db;
+            else {
+                tags = new ArrayList<>();
+            }
+        }
+        else {
+            photos = new ArrayList<>();
+            tags = new ArrayList<>();
+        }
+
+        list_Of_Num = new ArrayList<>();
+        list_Of_Map = new ArrayList<>();
+
+        // Set edit mode or read mode
+        if (!editorMode) {
+            et_title.setEnabled(false);
+            et_content.setKeyListener(null);
+            ib_camera.setEnabled(false);
+            ib_location.setEnabled(false);
+            ib_photos.setEnabled(false);
+            ib_save.setEnabled(false);
+            ib_tags.setEnabled(false);
+            tv_address.setVisibility(View.GONE);
+            scrollView_buttons.setVisibility(View.GONE);
+        }
+        else {
+            getCurrentLocation();
+            ShowAddress();
+        }
+    }
 
 //    private void ShowMap(){
 //        Intent intent = new Intent();
