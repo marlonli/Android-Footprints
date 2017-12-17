@@ -142,6 +142,8 @@ public class JournalEditorActivity extends AppCompatActivity {
             ib_tags.setEnabled(false);
         }
 //        et_content.setMovementMethod(new ScrollingMovementMethod());
+        getCurrentLocation();
+        ShowAddress();
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -319,9 +321,10 @@ public class JournalEditorActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent intent) {
         if (requestCode == REQ_CODE_TAKE_PICTURE
-                && resultCode == RESULT_OK) {
-            bmp = (Bitmap) intent.getExtras().get("data");
-            photos.add(bmp);
+                && resultCode == RESULT_OK && intent != null) {
+            Bitmap  photo = intent.getParcelableExtra("data");
+            photos.add(photo);
+            Log.e("photo","take picture success");
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
@@ -335,7 +338,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         if(DocumentsContract.isDocumentUri(this,uri)) {
             String docId = DocumentsContract.getDocumentId(uri);
             if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                //解析出数字格式的id
                 String id = docId.split(":")[1];
                 String selection = MediaStore.Images.Media._ID + "=" + id;
                 imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
@@ -343,10 +345,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                 Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
                 imagePath = getImagePath(contentUri,null);
             }else if ("content".equalsIgnoreCase(uri.getScheme())) {
-                //如果是content类型的uri，则使用普通方式处理
                 imagePath = getImagePath(uri,null);
             }else if ("file".equalsIgnoreCase(uri.getScheme())) {
-                //如果是file类型的uri，直接获取图片路径即可
                 imagePath = uri.getPath();
             }
             saveImage(imagePath);
@@ -428,7 +428,9 @@ public class JournalEditorActivity extends AppCompatActivity {
                         }
                         mLastLocation = location;
                         // Determine whether a Geocoder is available.
-
+                        if (!Geocoder.isPresent()) {
+                            return;
+                        }
                         startIntentService();
                     }
                 })
