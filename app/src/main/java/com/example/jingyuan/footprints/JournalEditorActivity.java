@@ -431,7 +431,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     image.setImageBitmap(photos.get(i));
                     bottomContainer.addView(image);
                 }
-            }
+        }
 
             tags_from_db = journal.getTags();
             if(tags_from_db != null)
