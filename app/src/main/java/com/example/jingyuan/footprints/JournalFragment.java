@@ -313,6 +313,7 @@ public class JournalFragment extends Fragment {
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
                     ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
                     if (photo_string!=null) {
+                        journal.setPhoto_string(photo_string);
                         ArrayList<Bitmap> photo_bit = photo_bit_to_string(photo_string);
                         journal.setPhotos(photo_bit);
                     }
