@@ -311,7 +311,7 @@ public class JournalFragment extends Fragment {
                     String lng = (String) snap.child("lng").getValue();
                     ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
-                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
                     if (photo_string!=null) {
                         journal.setPhoto_string(photo_string);
                         ArrayList<Bitmap> photo_bit = photo_bit_to_string(photo_string);
