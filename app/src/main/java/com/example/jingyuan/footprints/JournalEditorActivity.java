@@ -263,7 +263,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
                     final DatabaseReference Users = database.getReference("New_users");
 //                    DatabaseReference AAA = Users.child(username).child("journal_list");
-                    Users.child(username).child("journal_list").addValueEventListener(new ValueEventListener() {
+                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot snap:dataSnapshot.getChildren()){
@@ -272,6 +272,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                                     Map<String,Object> UP = new HashMap<>();
                                     UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
+                                    finish();
                                     break;
                                 }
                             }
