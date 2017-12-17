@@ -109,12 +109,12 @@ public class SearchResultActivity extends AppCompatActivity {
                     // TODO: following
                     if(!friendsName.contains(user.getUsername())) {
                         DatabaseReference newFriend = curUserRef.child("friends").push();
-                        //newFriend.setValue(query);      // add friend's name to friends list
-                        String imageEncoded = Base64.encodeToString(user.getProfileByteArray(), Base64.DEFAULT);    // add profile to friends list
-                        //newFriend.setValue(imageEncoded);
                         ArrayList<String> nf = new ArrayList<>();
                         nf.add(query);
-                        nf.add(imageEncoded);
+                        if(user.getProfileByteArray() != null) {
+                            String imageEncoded = Base64.encodeToString(user.getProfileByteArray(), Base64.DEFAULT);    // add profile to friends list
+                            nf.add(imageEncoded);
+                        }
                         newFriend.setValue(nf);
                         friendsName.add(user.getUsername());
                     }
@@ -126,7 +126,8 @@ public class SearchResultActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for(DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                                    if(user.getUsername().equals((String)snapshot.getValue())){
+                                    ArrayList<String> aFriend = (ArrayList<String>)snapshot.getValue();
+                                    if(user.getUsername().equals(aFriend.get(0))){
                                         myFriends.child(snapshot.getKey()).removeValue();
                                         friendsName.remove(user.getUsername());
                                         break;
