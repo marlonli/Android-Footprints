@@ -3,6 +3,7 @@ package com.example.jingyuan.footprints;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -16,7 +17,7 @@ import java.io.File;
 public class GalleryPreview extends AppCompatActivity {
 
     ImageView GalleryPreviewImg;
-    String path;
+    String image_string;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,10 +25,11 @@ public class GalleryPreview extends AppCompatActivity {
 //        getSupportActionBar().hide();
         setContentView(R.layout.gallery_preview);
         Intent intent = getIntent();
-        path = intent.getStringExtra("path");
+        image_string = intent.getStringExtra("image_name");
+        byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
         GalleryPreviewImg = (ImageView) findViewById(R.id.GalleryPreviewImg);
         Glide.with(GalleryPreview.this)
-                .load(new File(path)) // Uri of the picture
+                .load(image_byte) // Uri of the picture
                 .into(GalleryPreviewImg);
     }
 }

@@ -30,6 +30,15 @@ public class Utilities {
     static final String KEY_TIMESTAMP = "timestamp";
     static final String KEY_TIME = "date";
     static final String KEY_COUNT = "date";
+    static final String KEY_BYTE = "image_byte";
+
+    public static HashMap<String, String> set_value(String album, String image_byte,String count){
+        HashMap<String, String>map = new HashMap<String, String>();
+        map.put(KEY_ALBUM,album);
+        map.put(KEY_BYTE,image_byte);
+        map.put(KEY_COUNT,count);
+        return map;
+    }
 
     public static float dipToPixels(Context context, float dipValue) {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
