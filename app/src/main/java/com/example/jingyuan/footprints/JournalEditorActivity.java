@@ -251,7 +251,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     // Update the new journal
                     ArrayList<String> photo_string = photo_to_string(photos);
                     journal.setPhoto_string(photo_string);
-                    if (tags!=null){
+                    if (tags.size()!=0 && tags!=journal.getTags()){
                         journal.setTags(tags);
                     }
                     String title_new = et_title.getText().toString();
