@@ -3,6 +3,8 @@ package com.example.jingyuan.footprints;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
@@ -18,6 +20,7 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -43,6 +46,7 @@ import com.google.firebase.database.ValueEventListener;
 import com.wyh.slideAdapter.ItemBind;
 import com.wyh.slideAdapter.ItemView;
 import com.wyh.slideAdapter.SlideAdapter;
+import com.wyh.slideAdapter.SlideLayout;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -73,15 +77,17 @@ public class JournalFragment extends Fragment {
     private static final int EDIT = 10;
 
     public String username;
-//    private SwipeMenuListView lv;
+    //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
-//    MyJournalViewAdapter madapter;
+    //    MyJournalViewAdapter madapter;
     MyJournalRecyclerViewAdapter mAdapter;
     RecyclerView mRecyclerView;
     RecyclerView.LayoutManager mLayoutManager;
     private FloatingActionButton fab;
 
     private OnFragmentInteractionListener mListener;
+
+    public ItemBind itemBind;
 
     /*// Create SwipeMenuCreator
     SwipeMenuCreator creator = new SwipeMenuCreator() {
@@ -162,7 +168,17 @@ public class JournalFragment extends Fragment {
 
         // Initialization
         journals = new ArrayList<>();
-        read_data_from_database();
+        read_data_from_database(new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                SlideAdapter.load(journals)
+                        .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
+                        .bind(itemBind)
+                        .into(mRecyclerView);
+                Log.v("JournalFragment status", "loadFinish!!!!!!!!!");
+                sortList();
+            }
+        });
 //        addTestData();
 //        Collections.sort(journals, new JournalsComparator());
 
@@ -192,7 +208,7 @@ public class JournalFragment extends Fragment {
 //        mAdapter = new MyJournalRecyclerViewAdapter(journals);
 //        mRecyclerView.setAdapter(mAdapter);
 
-        ItemBind itemBind = new ItemBind<Journal>() {
+        itemBind = new ItemBind<Journal>() {
             @Override
             public void onBind(ItemView itemView, Journal j, final int position) {
                 itemView.setText(R.id.list_title, j.getTitle())
@@ -206,31 +222,42 @@ public class JournalFragment extends Fragment {
                 itemView.setText(R.id.list_content, j.getContent());
                 String loc = latLngToLoc(j.getLat(), j.getLng());
                 itemView.setText(R.id.list_location, loc);
-                String tags = journals.get(position).getTags().toString();
-                itemView.setText(R.id.list_tag, tags.substring(1,tags.length() - 1));
+                ArrayList<String> tags_tmp =  journals.get(position).getTags();
+                if (tags_tmp!=null) {
+                    String tags = tags_tmp.toString();
+                    itemView.setText(R.id.list_tag, tags.substring(1, tags.length() - 1));
+                }
                 itemView.setText(R.id.list_mon, j.getDateTimeString().toString().split(" ")[1]);
                 itemView.setText(R.id.list_date, j.getDateTimeString().toString().split(" ")[2]);
                 itemView.setOnClickListener(R.id.rightMenu_delete, new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         // onClick delete
-                        Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getActivity(), "Delete item " + position, Toast.LENGTH_SHORT).show();
 
                         // Delete the corresponding journal from the database.
                         FirebaseDatabase database = FirebaseDatabase.getInstance();
                         final DatabaseReference Users = database.getReference("New_users");
                         DatabaseReference journal_listener = Users.child(username).child("journal_list");
                         journal_listener.addValueEventListener(new ValueEventListener() {
+                            String real_title = journals.get(position).getTitle();
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                // delete from database
                                 for (DataSnapshot snap:dataSnapshot.getChildren()){
                                     String key_title = snap.getKey();
-                                    String real_title = journals.get(position).getTitle();
                                     if (key_title.equals(real_title)){
                                         Users.child(username).child("journal_list").child(key_title).removeValue();
+                                        // delete from local list
+                                        journals.remove(position);
                                         break;
                                     }
                                 }
+
+
+
+                                // update list
+//                                updateList();
                             }
 
                             @Override
@@ -249,10 +276,8 @@ public class JournalFragment extends Fragment {
             }
         };
 
-        SlideAdapter.load(journals)
-                .item(R.layout.journal_list, 0,0,R.layout.swipe_menu,0.25f)
-                .bind(itemBind)
-                .into(mRecyclerView);
+//        updateList();
+
 
 //        SwipeController swipeController = new SwipeController();
 //        ItemTouchHelper itemTouchhelper = new ItemTouchHelper(swipeController);
@@ -261,15 +286,21 @@ public class JournalFragment extends Fragment {
         return v;
     }
 
-    private void read_data_from_database(){
+    private void updateList() {
+        mRecyclerView.getAdapter().notifyDataSetChanged();
+
+    }
+
+    private void read_data_from_database(final LoadDataCallback callback){
         username = "User1";
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         final DatabaseReference Users = database.getReference("New_users");
-        DatabaseReference aaa = Users.child("User1");
+        DatabaseReference aaa = Users.child(username);
         DatabaseReference bbb = aaa.child("journal_list");
         bbb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                journals.clear();
                 for (DataSnapshot snap:dataSnapshot.getChildren()){
                     String key = snap.getKey();
                     String title = (String) snap.child("title").getValue();
@@ -279,10 +310,17 @@ public class JournalFragment extends Fragment {
                     String lat = (String) snap.child("lat").getValue();
                     String lng = (String) snap.child("lng").getValue();
                     ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
-
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
+                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                    if (photo_string!=null) {
+                        ArrayList<Bitmap> photo_bit = photo_bit_to_string(photo_string);
+                        journal.setPhotos(photo_bit);
+                    }
+
                     journals.add(journal);
                 }
+//                updateList();
+                callback.loadFinish();
             }
 
             @Override
@@ -290,6 +328,22 @@ public class JournalFragment extends Fragment {
 
             }
         });
+    }
+
+
+    private void sortList() {
+        Collections.sort(journals, new JournalsComparator());
+    }
+
+    private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+        for (int i=0;i<photo_string.size();i++){
+            String photo_string_tmp = photo_string.get(i);
+            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+            photo_bit.add(photo_bit_tmp);
+        }
+        return photo_bit;
     }
 
     private void addTestData() {
@@ -453,6 +507,9 @@ public class JournalFragment extends Fragment {
         intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL) {
             intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+            intent.putExtra("username", username);
+        }
+        else{
             intent.putExtra("username", username);
         }
         startActivityForResult(intent, JOURNAL_EDITOR_REQ);

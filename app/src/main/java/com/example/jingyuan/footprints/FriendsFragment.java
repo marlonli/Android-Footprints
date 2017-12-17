@@ -153,10 +153,12 @@ public class FriendsFragment extends Fragment {
         final String myName = name;
 //        final ArrayList<User> friendss = new ArrayList<User>();
         //DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference(DBName);
+        //mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
         mDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String curName = "";
+                friends.clear();
                 for(DataSnapshot userSnap : dataSnapshot.getChildren()) {
                     curName = (String)userSnap.child("username").getValue();
                     if(curName.equals(myName)) {
@@ -167,8 +169,11 @@ public class FriendsFragment extends Fragment {
                         // load friends' username of current user
                         Iterable<DataSnapshot> myFriends = userSnap.child("friends").getChildren();
                         for(DataSnapshot snapshot : myFriends) {
-                            String friendName = (String)snapshot.getValue();
-                            User friend = new User(friendName);
+                            //String friendName = (String)snapshot.getValue();
+                            ArrayList<String> myFriend = (ArrayList<String>)snapshot.getValue();
+                            User friend = new User(myFriend.get(0));
+                            byte[] decodedByteArray = Base64.decode(myFriend.get(1), Base64.DEFAULT);
+                            friend.setProfileByteArray(decodedByteArray);
                             friends.add(friend);
                         }
                         break;
@@ -273,6 +278,11 @@ public class FriendsFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), SearchResultActivity.class);
                 intent.putExtra(SearchManager.QUERY, query);
                 intent.putExtra("username", username);
+                ArrayList<String> friendsName = new ArrayList<>();
+                for(User user : friends){
+                    friendsName.add(user.getUsername());
+                }
+                intent.putExtra("friends", friendsName);
                 startActivityForResult(intent, FRIENDS_FRAGMENT_REQ);
                 return false;
             }
@@ -331,10 +341,11 @@ public class FriendsFragment extends Fragment {
                 Log.v("FrendsFragment status", "position: " + position);
                 if (position == 0) {
                     // set my profile and user name
-                    User me = friends.get(0);
+                    //User me = friends.get(0);
 //                me.setProfile(u.getProfile());
                     Log.v("FrendsFragment status", "username: " + u.getUsername());
-                    me.setUsername(u.getUsername());
+                    //me.setUsername(u.getUsername());
+                    friends.set(0, u);
                     mAdapter.notifyDataSetChanged();
                 }
             }
