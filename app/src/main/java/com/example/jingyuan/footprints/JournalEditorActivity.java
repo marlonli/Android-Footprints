@@ -378,40 +378,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
 
 
-<<<<<<< HEAD
-//    private void initialization() {
-//        et_title = (EditText) findViewById(R.id.editText_title);
-//        et_content = (EditText) findViewById(R.id.editText_content);
-//        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-//        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-//        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-//        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-//        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-//        tv_address = (TextView) findViewById(R.id.tv_location);
-//        mResultReceiver = new AddressResultReceiver(new Handler());
-//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        mAddressOutput = "";
-//        if(journal != null){
-//            ArrayList<Bitmap> photos_tep = journal.getPhotos();
-//            if(photos_tep != null)
-//                photos = photos_tep;
-//        }
-//        else
-//            photos = new ArrayList<>();
-//        if(journal != null) {
-//            tags_from_db = journal.getTags();
-//            if(tags_from_db != null)
-//                tags = tags_from_db;
-//            else {
-//                tags = new ArrayList<>();
-//            }
-//        } else {
-//            tags = new ArrayList<>();
-//        }
-//        list_Of_Num = new ArrayList<>();
-//        list_Of_Map = new ArrayList<>();
-//    }
-=======
+
     private ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
         ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
         for (int i=0;i<photo_string.size();i++){
