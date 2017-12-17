@@ -354,7 +354,7 @@ class AlbumAdapter extends BaseAdapter {
             String image_string = song.get(Utilities.KEY_BYTE);
             byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
             Glide.with(activity)
-                    .load(image_string)
+                    .load(image_byte)
                     .into(holder.galleryImage);
 
 
