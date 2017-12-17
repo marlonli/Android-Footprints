@@ -55,6 +55,7 @@ import com.google.firebase.database.ValueEventListener;
 import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -115,14 +116,40 @@ public class JournalEditorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_journal_editor);
 
-        // Initialization
-        initialization();
-
         // Get intent
         Intent intent = getIntent();
         journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
         username = (String) intent.getStringExtra("username");
         editorMode =  (intent.getIntExtra(EDITOR_MODE, 10) == EDIT);
+
+        et_title = (EditText) findViewById(R.id.editText_title);
+        et_content = (EditText) findViewById(R.id.editText_content);
+        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
+        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
+        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
+        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
+        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+        tv_address = (TextView) findViewById(R.id.tv_location);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mAddressOutput = "";
+        if(journal != null){
+            photos = journal.getPhotos();
+            Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
+        }
+        else {
+            photos = new ArrayList<>();
+            Log.e("photo","journal is null");
+        }
+        if(journal != null) {
+            tags = journal.getTags();
+            Log.v("tags",Integer.toString(tags.size()));
+        } else {
+            Log.v("tags","enter jpjiio");
+            tags = new ArrayList<>();
+        }
+        list_Of_Num = new ArrayList<>();
+        list_Of_Map = new ArrayList<>();
 
         // TODO: edit journal if j != null
         Log.v("Journal Editor", "journal: " + journal);
@@ -322,87 +349,66 @@ public class JournalEditorActivity extends AppCompatActivity {
                 && resultCode == RESULT_OK && intent != null) {
             Bitmap  photo = intent.getParcelableExtra("data");
             photos.add(photo);
-            Log.e("photo","take picture success");
+            String size = Integer.toString(photos.size());
+            Log.e("photo","after add now exist " + size);
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-            handleImageOnKitKat(intent);
+            try {
+                handleImageOnKitKat(intent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    private void handleImageOnKitKat(Intent intent) {
+    private void handleImageOnKitKat(Intent intent) throws IOException {
         String imagePath = null;
         Uri uri = intent.getData();
-        if(DocumentsContract.isDocumentUri(this,uri)) {
-            String docId = DocumentsContract.getDocumentId(uri);
-            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
-                String id = docId.split(":")[1];
-                String selection = MediaStore.Images.Media._ID + "=" + id;
-                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
-            }else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
-                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
-                imagePath = getImagePath(contentUri,null);
-            }else if ("content".equalsIgnoreCase(uri.getScheme())) {
-                imagePath = getImagePath(uri,null);
-            }else if ("file".equalsIgnoreCase(uri.getScheme())) {
-                imagePath = uri.getPath();
-            }
-            saveImage(imagePath);
-        }
-    }
-
-    private String getImagePath(Uri uri,String selection) {
-        String path = null;
-        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
-        if (cursor != null) {
-            if (cursor.moveToFirst()) {
-                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-            }
-            cursor.close();
-        }
-        return path;
-    }
-
-    private void saveImage(String imagePath){
-        if (imagePath != null) {
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-            Log.i("aaaaaa","fffff");
+        Bitmap photoBmp = null;
+        if (uri != null) {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
             photos.add(bitmap);
+            Log.e("phots", "after add(from album) now exist " + Integer.toString(photos.size()));
+        } else{
+            Log.e("photo","album: uri is null");
         }
     }
 
-    private void initialization() {
-        et_title = (EditText) findViewById(R.id.editText_title);
-        et_content = (EditText) findViewById(R.id.editText_content);
-        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-        tv_address = (TextView) findViewById(R.id.tv_location);
-        mResultReceiver = new AddressResultReceiver(new Handler());
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mAddressOutput = "";
-        if(journal != null){
-            ArrayList<Bitmap> photos_tep = journal.getPhotos();
-            if(photos_tep != null)
-                photos = photos_tep;
-        }
-        else
-            photos = new ArrayList<>();
-        if(journal != null) {
-            tags_from_db = journal.getTags();
-            if(tags_from_db != null)
-                tags = tags_from_db;
-            else {
-                tags = new ArrayList<>();
-            }
-        } else {
-            tags = new ArrayList<>();
-        }
-        list_Of_Num = new ArrayList<>();
-        list_Of_Map = new ArrayList<>();
-    }
+
+
+//    private void initialization() {
+//        et_title = (EditText) findViewById(R.id.editText_title);
+//        et_content = (EditText) findViewById(R.id.editText_content);
+//        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
+//        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
+//        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
+//        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
+//        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+//        tv_address = (TextView) findViewById(R.id.tv_location);
+//        mResultReceiver = new AddressResultReceiver(new Handler());
+//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        mAddressOutput = "";
+//        if(journal != null){
+//            ArrayList<Bitmap> photos_tep = journal.getPhotos();
+//            if(photos_tep != null)
+//                photos = photos_tep;
+//        }
+//        else
+//            photos = new ArrayList<>();
+//        if(journal != null) {
+//            tags_from_db = journal.getTags();
+//            if(tags_from_db != null)
+//                tags = tags_from_db;
+//            else {
+//                tags = new ArrayList<>();
+//            }
+//        } else {
+//            tags = new ArrayList<>();
+//        }
+//        list_Of_Num = new ArrayList<>();
+//        list_Of_Map = new ArrayList<>();
+//    }
 
 //    private void ShowMap(){
 //        Intent intent = new Intent();
