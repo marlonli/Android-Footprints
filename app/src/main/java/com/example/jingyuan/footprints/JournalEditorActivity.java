@@ -246,9 +246,11 @@ public class JournalEditorActivity extends AppCompatActivity {
                 }
                 else{
                     // Update the new journal
-                    ArrayList<String> photo_string = photo_to_string(photos);
-                    journal.setPhoto_string(photo_string);
-                    if (tags.size()!=0 && tags!=journal.getTags()){
+                    if (photos != null && photos.size() != 0) {
+                        ArrayList<String> photo_string = photo_to_string(photos);
+                        journal.setPhoto_string(photo_string);
+                    }
+                    if (tags != null && tags.size() != 0 && tags!=journal.getTags()){
                         journal.setTags(tags);
                     }
                     String title_new = et_title.getText().toString();
@@ -398,9 +400,10 @@ public class JournalEditorActivity extends AppCompatActivity {
         if(journal != null){
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
-            ArrayList<String> photos_string_tep = journal.getPhotos();
-            ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-            if(photos_tep != null){
+            if (journal.getPhotos() != null) {
+                ArrayList<String> photos_string_tep = new ArrayList<>();
+                photos_string_tep.addAll(journal.getPhotos());
+                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
                 photos = photos_tep;
                 Log.v("images", "add image: " + photos.size());
                 for (int i = 0; i < photos.size(); i++) {
