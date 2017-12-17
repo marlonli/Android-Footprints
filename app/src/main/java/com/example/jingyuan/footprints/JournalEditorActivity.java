@@ -278,6 +278,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                                     Map<String,Object> UP = new HashMap<>();
                                     UP.put("/"+username+"/journal_list/"+key_title,journal);
                                     Users.updateChildren(UP);
+                                    break;
                                 }
                             }
                         }
