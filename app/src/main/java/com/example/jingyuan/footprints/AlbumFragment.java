@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.MergeCursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +32,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -51,7 +59,7 @@ public class AlbumFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
 
     // TODO: Rename and change types of parameters
-    private String username;
+    public String username;
 
     private static final int STORAGE_PERMISSION_REQUEST_CODE = 1;
     LoadAlbum loadAlbumTask;
@@ -71,6 +79,7 @@ public class AlbumFragment extends Fragment {
      * @param param1 username.
      * @return A new instance of fragment AlbumFragment.
      */
+
     public static AlbumFragment newInstance(String param1) {
         AlbumFragment fragment = new AlbumFragment();
         Bundle args = new Bundle();
@@ -205,34 +214,81 @@ public class AlbumFragment extends Fragment {
         protected String doInBackground(String... args) {
             String xml = "";
 
-            String path = null;
-            String album = null;
-            String timestamp = null;
-            String countPhoto = null;
-            Uri uriExternal = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            Uri uriInternal = android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+//            String path = null;
+//            String album = null;
+//            String timestamp = null;
+//            String countPhoto = null;
+//            Uri uriExternal = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+//            Uri uriInternal = android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
+//
+//            // Get photos from storage
+//            String[] projection = { MediaStore.MediaColumns.DATA,
+//                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DATE_MODIFIED };
+//            Cursor cursorExternal = getActivity().getContentResolver().query(uriExternal, projection, "_data IS NOT NULL) GROUP BY (bucket_display_name",
+//                    null, null);
+//            Cursor cursorInternal = getActivity().getContentResolver().query(uriInternal, projection, "_data IS NOT NULL) GROUP BY (bucket_display_name",
+//                    null, null);
+//            Cursor cursor = new MergeCursor(new Cursor[]{cursorExternal,cursorInternal});
+//
+//            while (cursor.moveToNext()) {
+//
+//                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+//                album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
+//                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
+//                countPhoto = Utilities.getCount(getActivity().getApplicationContext(), album);
+//                Log.v("time stamp: ", timestamp);
+//                albumList.add(Utilities.mappingInbox(album, path, timestamp, Utilities.converToTime(timestamp), countPhoto));
+//            }
+//            cursor.close();
+//            Collections.sort(albumList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
 
-            // Get photos from storage
-            String[] projection = { MediaStore.MediaColumns.DATA,
-                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DATE_MODIFIED };
-            Cursor cursorExternal = getActivity().getContentResolver().query(uriExternal, projection, "_data IS NOT NULL) GROUP BY (bucket_display_name",
-                    null, null);
-            Cursor cursorInternal = getActivity().getContentResolver().query(uriInternal, projection, "_data IS NOT NULL) GROUP BY (bucket_display_name",
-                    null, null);
-            Cursor cursor = new MergeCursor(new Cursor[]{cursorExternal,cursorInternal});
 
-            while (cursor.moveToNext()) {
 
-                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-                album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
-                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
-                countPhoto = Utilities.getCount(getActivity().getApplicationContext(), album);
-                Log.v("time stamp: ", timestamp);
-                albumList.add(Utilities.mappingInbox(album, path, timestamp, Utilities.converToTime(timestamp), countPhoto));
-            }
-            cursor.close();
-            Collections.sort(albumList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            final DatabaseReference Users = database.getReference("New_users");
+            DatabaseReference aaa = Users.child(username);
+            DatabaseReference bbb = aaa.child("journal_list");
+            bbb.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for (DataSnapshot snap:dataSnapshot.getChildren()){
+                        String key = snap.getKey();
+                        ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                        Utilities u = new Utilities();
+                        if (photo_string!=null){
+                            String photo_string_one = photo_string.get(0);
+                            HashMap<String,String> album_one = u.set_value(key,photo_string_one,""+photo_string.size());
+//                            HashMap<String,String> album_one = new HashMap<>();
+//                            album_one.put(key,photo_string_one);
+                            albumList.add(album_one);
+                        }
+                        else{
+                            HashMap<String,String> album_one = u.set_value(key,null,"0");
+                            albumList.add(album_one);
+                        }
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
+
             return xml;
+        }
+
+        public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+            ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+            for (int i=0;i<photo_string.size();i++){
+                String photo_string_tmp = photo_string.get(i);
+                byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+                Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+                photo_bit.add(photo_bit_tmp);
+            }
+            return photo_bit;
         }
 
         @Override
@@ -245,6 +301,7 @@ public class AlbumFragment extends Fragment {
                                         final int position, long id) {
                     Intent intent = new Intent(getActivity(), AlbumActivity.class);
                     intent.putExtra("name", albumList.get(+position).get(Utilities.KEY_ALBUM));
+                    intent.putExtra("username",username);
                     startActivity(intent);
                 }
             });
@@ -293,10 +350,11 @@ class AlbumAdapter extends BaseAdapter {
         song = data.get(position);
         try {
             holder.gallery_title.setText(song.get(Utilities.KEY_ALBUM));
-            holder.gallery_count.setText(song.get(Utilities.KEY_COUNT));
-
+            holder.gallery_count.setText(song.get(Utilities.KEY_COUNT)+" Photos");
+            String image_string = song.get(Utilities.KEY_BYTE);
+            byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
             Glide.with(activity)
-                    .load(new File(song.get(Utilities.KEY_PATH))) // Uri of the picture
+                    .load(image_byte) // Uri of the picture
                     .into(holder.galleryImage);
 
 

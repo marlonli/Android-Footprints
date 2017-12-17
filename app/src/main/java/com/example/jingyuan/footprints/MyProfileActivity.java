@@ -280,10 +280,14 @@ public class MyProfileActivity extends AppCompatActivity {
                     curName = (String)userSnap.child("username").getValue();
                     if(curName.equals(myName)) {
                         // load and decode profile
-                        String encodedProfile = (String)userSnap.child("profile").getValue();
-                        byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
-                        Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
-                        ib.setImageBitmap(myProfile);
+                        if(userSnap.child("profile").getValue() != null) {
+                            String encodedProfile = (String) userSnap.child("profile").getValue();
+                            byte[] decodedByteArray = Base64.decode(encodedProfile, Base64.DEFAULT);
+                            Bitmap myProfile = BitmapFactory.decodeByteArray(decodedByteArray, 0, decodedByteArray.length);
+                            ib.setImageBitmap(myProfile);
+                        }
+                        else
+                            ib.setImageResource(R.drawable.ic_person_black_24dp);
                         loadFriends(userSnap);
                         loadJournals(userSnap);
                     }

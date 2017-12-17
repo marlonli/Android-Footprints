@@ -172,8 +172,10 @@ public class FriendsFragment extends Fragment {
                             //String friendName = (String)snapshot.getValue();
                             ArrayList<String> myFriend = (ArrayList<String>)snapshot.getValue();
                             User friend = new User(myFriend.get(0));
-                            byte[] decodedByteArray = Base64.decode(myFriend.get(1), Base64.DEFAULT);
-                            friend.setProfileByteArray(decodedByteArray);
+                            if(myFriend.size() > 1) {
+                                byte[] decodedByteArray = Base64.decode(myFriend.get(1), Base64.DEFAULT);
+                                friend.setProfileByteArray(decodedByteArray);
+                            }
                             friends.add(friend);
                         }
                         break;

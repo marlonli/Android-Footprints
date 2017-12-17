@@ -145,6 +145,9 @@ public class JournalEditorActivity extends AppCompatActivity {
         getCurrentLocation();
         ShowAddress();
 
+        getCurrentLocation();
+        ShowAddress();
+
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -301,6 +304,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         });
     }
 
+    // Convert bitmap to string
     public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
         ArrayList<String> photo_string = new ArrayList<String>();
         for (int i=0;i<photo_bit.size();i++){
@@ -315,7 +319,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
         return photo_string;
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode,
@@ -447,10 +450,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         // Pass the result receiver as an extra to the service.
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
-
-
         intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
-
 
         //Log.e("sss", "before startservice");
         startService(intent);
@@ -467,6 +467,8 @@ public class JournalEditorActivity extends AppCompatActivity {
 
                             currentLatitude = mLastLocation.getLatitude();
                             currentLongitude = mLastLocation.getLongitude();
+                            Log.v("JournalEditor status", "lat: " + currentLatitude + ", lng: " + currentLongitude);
+
                         } else {
                             Log.w(TAG, "getLastLocation:exception", task.getException());
                         }
