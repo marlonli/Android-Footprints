@@ -58,10 +58,10 @@ public class LoginFragment extends Fragment {
 
         // get reference of buttons
         final View myView = inflater.inflate(R.layout.fragment_login, container, false);
-        Button loginBtn = (Button)myView.findViewById(R.id.loginButton);
-        Button createNewBtn = (Button)myView.findViewById(R.id.createButton);
+        Button signinBtn = (Button)myView.findViewById(R.id.loginButton);
+        Button signupBtn = (Button)myView.findViewById(R.id.createButton);
 
-        loginBtn.setOnClickListener(new View.OnClickListener() {
+        signinBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // get user input
@@ -69,50 +69,72 @@ public class LoginFragment extends Fragment {
                 final String passWord = ((EditText)myView.findViewById(R.id.passWord)).getText().toString();
 
                 // load data from database
-                usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        String password = "";
-                        for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                            String name = (String) userSnapshot.child("username").getValue();
-                            if(name.equals(userName)){
-                                password = (String) userSnapshot.child("password").getValue();
-                                break;
-                            }
-                        }
-                        if(password.equals(""))
-                            Toast.makeText(getActivity().getApplicationContext(), "No such user", Toast.LENGTH_SHORT).show();
-                        else {
-                            if (password.equals(passWord))
-                                access = true;
-                            else
-                                Toast.makeText(getActivity().getApplicationContext(), "Password does not match", Toast.LENGTH_SHORT).show();
-                        }
-                    }
+//                usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                        String password = "";
+//                        for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+//                            String name = (String) userSnapshot.child("username").getValue();
+//                            if(name.equals(userName)){
+//                                password = (String) userSnapshot.child("password").getValue();
+//                                break;
+//                            }
+//                        }
+//                        if(password.equals(""))
+//                            Toast.makeText(getActivity().getApplicationContext(), "No such user", Toast.LENGTH_SHORT).show();
+//                        else {
+//                            if (password.equals(passWord))
+//                                access = true;
+//                            else
+//                                Toast.makeText(getActivity().getApplicationContext(), "Password does not match", Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//
+//                    }
+//                });
 
+                searchUser(userName, passWord, new LoadDataCallback() {
                     @Override
-                    public void onCancelled(DatabaseError databaseError) {
+                    public void loadFinish() {
+                        if(access){
+                            // make navigation bar and fab visible
+                            navigationView.setVisibility(View.VISIBLE);
+                            fab.setVisibility(View.VISIBLE);
 
+                            // set value of object "username" in MainActivity
+                            ((MainActivity)getActivity()).setUsername(userName);
+
+                            // clear EditText
+                            ((EditText)myView.findViewById(R.id.userName)).setText("");
+                            ((EditText)myView.findViewById(R.id.passWord)).setText("");
+
+                            // move to journal fragment
+                            String para1 = "journal_para1";
+                            String para2 = "journal_para2";
+                            getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(userName), "Journal").addToBackStack(null).commit();
+                        }
                     }
                 });
-
-                if(access){
-                    // make navigation bar and fab visible
-                    navigationView.setVisibility(View.VISIBLE);
-                    fab.setVisibility(View.VISIBLE);
-
-                    // set value of object "username" in MainActivity
-                    ((MainActivity)getActivity()).setUsername(userName);
-
-                    // move to journal fragment
-                    String para1 = "journal_para1";
-                    String para2 = "journal_para2";
-                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(userName), "Journal").addToBackStack(null).commit();
-                }
+//                if(access){
+//                    // make navigation bar and fab visible
+//                    navigationView.setVisibility(View.VISIBLE);
+//                    fab.setVisibility(View.VISIBLE);
+//
+//                    // set value of object "username" in MainActivity
+//                    ((MainActivity)getActivity()).setUsername(userName);
+//
+//                    // move to journal fragment
+//                    String para1 = "journal_para1";
+//                    String para2 = "journal_para2";
+//                    getFragmentManager().beginTransaction().replace(R.id.fragment_container, JournalFragment.newInstance(userName), "Journal").addToBackStack(null).commit();
+//                }
             }
         });
 
-        createNewBtn.setOnClickListener(new View.OnClickListener() {
+        signupBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String userName = ((EditText)myView.findViewById(R.id.userName)).getText().toString();
@@ -134,6 +156,10 @@ public class LoginFragment extends Fragment {
                     // set value of object "username" in MainActivity
                     ((MainActivity)getActivity()).setUsername(userName);
 
+                    // clear EditText
+                    ((EditText)myView.findViewById(R.id.userName)).setText("");
+                    ((EditText)myView.findViewById(R.id.passWord)).setText("");
+
                     // move to journal fragment
                     String para1 = "journal_para1";
                     String para2 = "journal_para2";
@@ -144,6 +170,37 @@ public class LoginFragment extends Fragment {
 
         // Inflate the layout for this fragment
         return myView;
+    }
+
+    private void searchUser(final String userName, final String passWord, final LoadDataCallback callback) {
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String password = "";
+                for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                    String name = (String) userSnapshot.child("username").getValue();
+                    if(name.equals(userName)){
+                        password = (String) userSnapshot.child("password").getValue();
+                        break;
+                    }
+                }
+                if(password.equals(""))
+                    Toast.makeText(getActivity().getApplicationContext(), "No such user", Toast.LENGTH_SHORT).show();
+                else {
+                    if (password.equals(passWord))
+                        access = true;
+                    else
+                        Toast.makeText(getActivity().getApplicationContext(), "Password does not match", Toast.LENGTH_SHORT).show();
+                }
+
+                callback.loadFinish();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     // TODO: Rename method, update argument and hook method into UI event
