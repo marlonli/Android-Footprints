@@ -5,6 +5,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -17,6 +18,7 @@ import android.media.Image;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.ResultReceiver;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
@@ -104,6 +106,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private ArrayList<Bitmap> photos;    // list_Of_Images;
     private List<String> list_Of_Num;
     private List<Map<String, Object>> list_Of_Map;
+    private ArrayList<String> tags_from_db;     //tag got from database
 
     public String username;
 
@@ -140,6 +143,9 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 //        et_content.setMovementMethod(new ScrollingMovementMethod());
 
+        getCurrentLocation();
+        ShowAddress();
+
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,28 +159,27 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_tags.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view){
-                ArrayList<String> tags_tmp = new ArrayList<>();
-                if (journal != null)
-                     tags_tmp = journal.getTags();
+                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
+                view = factory.inflate(R.layout.tag_window, null);
+                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
+                if(journal != null) {
+                    tags_from_db = journal.getTags();
+                }
                 list_Of_Map.clear();
-                if (tags_tmp!=null){
-                    tags = tags_tmp;
-                    int size = tags.size();
-                    list_Of_Num.clear();
-                    for(int i = 0; i < size; i++){
-                        list_Of_Num.add(Integer.toString(i+1)+".");
+                if(tags_from_db != null) {
+                    tags = tags_from_db;
+                    for(int i = 0; i < tags.size(); i++) {
+                        String str_size = Integer.toString(i + 1)+".";
+                        list_Of_Num.add(str_size);
                     }
+                }
+                if(tags.size() != 0) {
                     for (int i = 0; i < tags.size(); i++) {
                         Map<String, Object> listem = new HashMap<String, Object>();
                         listem.put("index", list_Of_Num.get(i));
                         listem.put("tag", tags.get(i));
                         list_Of_Map.add(listem);
                     }
-                }
-                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
-                view = factory.inflate(R.layout.tag_window, null);
-                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
-                if(tags.size() != 0) {
                     simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
                             new String[]{"index", "tag"}, new int[]{
                             R.id.listcontent_index, R.id.listcontent_content});
@@ -297,6 +302,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         });
     }
 
+    // Convert bitmap to string
     public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
         ArrayList<String> photo_string = new ArrayList<String>();
         for (int i=0;i<photo_bit.size();i++){
@@ -312,7 +318,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         return photo_string;
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent intent) {
@@ -323,22 +328,51 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-//            Uri selectedImage = intent.getData();
-//            String[] filePathColumns = {MediaStore.Images.Media.DATA};
-//            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
-//            c.moveToFirst();
-//            int columnIndex = c.getColumnIndex(filePathColumns[0]);
-//            String imagePath = c.getString(columnIndex);
-//            saveImage(imagePath);
-//            c.close();
-            bmp = (Bitmap) intent.getExtras().get("data");
-            photos.add(bmp);
+            handleImageOnKitKat(intent);
         }
     }
 
-    private void saveImage(String imaePath){
-        Bitmap bm = BitmapFactory.decodeFile(imaePath);
-        //save the bm in db
+    private void handleImageOnKitKat(Intent intent) {
+        String imagePath = null;
+        Uri uri = intent.getData();
+        if(DocumentsContract.isDocumentUri(this,uri)) {
+            String docId = DocumentsContract.getDocumentId(uri);
+            if ("com.android.providers.media.documents".equals(uri.getAuthority())) {
+                //解析出数字格式的id
+                String id = docId.split(":")[1];
+                String selection = MediaStore.Images.Media._ID + "=" + id;
+                imagePath = getImagePath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,selection);
+            }else if ("com.android.providers.downloads.documents".equals(uri.getAuthority())) {
+                Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),Long.valueOf(docId));
+                imagePath = getImagePath(contentUri,null);
+            }else if ("content".equalsIgnoreCase(uri.getScheme())) {
+                //如果是content类型的uri，则使用普通方式处理
+                imagePath = getImagePath(uri,null);
+            }else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                //如果是file类型的uri，直接获取图片路径即可
+                imagePath = uri.getPath();
+            }
+            saveImage(imagePath);
+        }
+    }
+
+    private String getImagePath(Uri uri,String selection) {
+        String path = null;
+        Cursor cursor = getContentResolver().query(uri,null,selection,null,null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                path = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            }
+            cursor.close();
+        }
+        return path;
+    }
+
+    private void saveImage(String imagePath){
+        if (imagePath != null) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            photos.add(bitmap);
+        }
     }
 
     private void initialization() {
@@ -414,10 +448,7 @@ public class JournalEditorActivity extends AppCompatActivity {
         Intent intent = new Intent(this, FetchAddressIntentService.class);
         // Pass the result receiver as an extra to the service.
         intent.putExtra(Constants.RECEIVER, mResultReceiver);
-
-
         intent.putExtra(Constants.LOCATION_DATA_EXTRA, mLastLocation);
-
 
         //Log.e("sss", "before startservice");
         startService(intent);
@@ -434,6 +465,8 @@ public class JournalEditorActivity extends AppCompatActivity {
 
                             currentLatitude = mLastLocation.getLatitude();
                             currentLongitude = mLastLocation.getLongitude();
+                            Log.v("JournalEditor status", "lat: " + currentLatitude + ", lng: " + currentLongitude);
+
                         } else {
                             Log.w(TAG, "getLastLocation:exception", task.getException());
                         }

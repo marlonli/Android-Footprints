@@ -70,7 +70,7 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="bottom"
-            android:text="Edit"
+            android:text="Reset Password"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/textView_username"
             app:layout_constraintTop_toTopOf="parent" />
