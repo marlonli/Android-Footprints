@@ -29,6 +29,7 @@
                 <TextView
                     android:id="@+id/list_title"
                     android:ellipsize="end"
+                    android:maxLines="1"
                     android:layout_width="0dp"
                     android:layout_height="28dp"
                     android:layout_marginRight="@dimen/text_margin"
