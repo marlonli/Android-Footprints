@@ -46,6 +46,17 @@ class Journal implements Serializable {
 
     }
 
+    public Journal(String title, long currentTime, String lat, String lng) {
+        this.title = title;
+        this.tags = new ArrayList<>();
+        this.lat = lat;
+        this.lng = lng;
+        this.content = "";
+        this.dateTime = currentTime;
+        this.photos = new ArrayList<>();
+
+    }
+
     public long get_id() {
         return _id;
     }

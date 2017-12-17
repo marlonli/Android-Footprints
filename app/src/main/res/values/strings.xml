@@ -14,6 +14,7 @@
     <string name="title_people">People</string>
     <string name="action_add">New Journal</string>
     <string name="action_add_person">Add Person</string>
+    <string name="action_reset_password">Reset Password</string>
     <string name="search_title">Search</string>
     <string name="search_hint">username</string>
     <string name="username_hint">Username</string>
