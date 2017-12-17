@@ -140,7 +140,19 @@ public class JournalEditorActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
         if(journal != null){
-            photos = journal.getPhotos();
+            et_title.setText(journal.getTitle());
+            et_content.setText(journal.getContent());
+            ArrayList<String> photos_string_tep = journal.getPhotos();
+            if(photos_string_tep != null) {
+                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
+                photos = photos_tep;
+                Log.v("images", "add image: " + photos.size());
+                for (int i = 0; i < photos.size(); i++) {
+                    ImageView image = new ImageView(this);
+                    image.setImageBitmap(photos.get(i));
+                    bottomContainer.addView(image);
+                }
+            }
             Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
         }
         else {
