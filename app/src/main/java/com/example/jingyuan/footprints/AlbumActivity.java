@@ -104,7 +104,33 @@ public class AlbumActivity extends AppCompatActivity {
 //            cursor.close();
 //            Collections.sort(imageList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
 
+            read_img_from_data(new LoadDataCallback() {
+                @Override
+                public void loadFinish() {
+                    if (image_list == null) {
+                        Toast.makeText(getApplicationContext(), "No photos in this ablum.", Toast.LENGTH_SHORT).show();
+                    }
+                    else{
+                        SingleAlbumAdapter adapter = new SingleAlbumAdapter(AlbumActivity.this, image_list);
+                        galleryGridView.setAdapter(adapter);
+                        galleryGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            public void onItemClick(AdapterView<?> parent, View view,
+                                                    final int position, long id) {
 
+                                Intent intent = new Intent(AlbumActivity.this, GalleryPreview.class);
+                                intent.putExtra("image_name", image_list.get(+position));
+                                startActivity(intent);
+                            }
+                        });
+                    }
+                }
+            });
+
+
+            return xml;
+        }
+
+        public void read_img_from_data(final LoadDataCallback callback){
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             final DatabaseReference Users = database.getReference("New_users");
             DatabaseReference aaa = Users.child(username);
@@ -116,7 +142,6 @@ public class AlbumActivity extends AppCompatActivity {
                         String key = snap.getKey();
                         if(key.equals(album_name)) {
                             ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
-                            Utilities u = new Utilities();
                             if (photo_string != null) {
                                 image_list = photo_string;
                             } else {
@@ -125,7 +150,7 @@ public class AlbumActivity extends AppCompatActivity {
                             break;
                         }
                     }
-
+                    callback.loadFinish();
                 }
 
                 @Override
@@ -133,29 +158,12 @@ public class AlbumActivity extends AppCompatActivity {
 
                 }
             });
-
-            return xml;
         }
 
         @Override
         protected void onPostExecute(String xml) {
 
-            if (image_list == null) {
-                Toast.makeText(getApplicationContext(), "No photos in this ablum.", Toast.LENGTH_SHORT).show();
-            }
-            else{
-                SingleAlbumAdapter adapter = new SingleAlbumAdapter(AlbumActivity.this, image_list);
-                galleryGridView.setAdapter(adapter);
-                galleryGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> parent, View view,
-                                            final int position, long id) {
 
-                        Intent intent = new Intent(AlbumActivity.this, GalleryPreview.class);
-                        intent.putExtra("image_name", image_list.get(+position));
-                        startActivity(intent);
-                    }
-                });
-            }
         }
     }
 }
