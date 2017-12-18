@@ -540,16 +540,6 @@ public class JournalEditorActivity extends AppCompatActivity {
                     });
                 }
 
-//                Users.child("journal").push().setValue(journal.getContent());
-
-
-//                Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
-//
-//                intent.putExtra(JOURNAL_OBJECT, journal);
-////                intent.putExtra("addPerson", add);
-////                intent.putExtra("size", relation.size());
-//
-//                setResult(JOURNAL_EDITOR_REQ, intent);
                 finish();
             }
         });

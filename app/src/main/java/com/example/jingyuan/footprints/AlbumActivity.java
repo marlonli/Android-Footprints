@@ -81,28 +81,6 @@ public class AlbumActivity extends AppCompatActivity {
         protected String doInBackground(String... args) {
             String xml = "";
 
-//            String path = null;
-//            String album = null;
-//            String timestamp = null;
-//            Uri uriExternal = android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-//            Uri uriInternal = android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI;
-//
-//            String[] projection = { MediaStore.MediaColumns.DATA,
-//                    MediaStore.Images.Media.BUCKET_DISPLAY_NAME, MediaStore.MediaColumns.DATE_MODIFIED };
-//
-//            Cursor cursorExternal = getContentResolver().query(uriExternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
-//            Cursor cursorInternal = getContentResolver().query(uriInternal, projection, "bucket_display_name = \""+album_name+"\"", null, null);
-//            Cursor cursor = new MergeCursor(new Cursor[]{cursorExternal,cursorInternal});
-//            while (cursor.moveToNext()) {
-//
-//                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-//                album = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME));
-//                timestamp = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATE_MODIFIED));
-//
-//                imageList.add(Utilities.mappingInbox(album, path, timestamp, Utilities.converToTime(timestamp), null));
-//            }
-//            cursor.close();
-//            Collections.sort(imageList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
 
             read_img_from_data(new LoadDataCallback() {
                 @Override
