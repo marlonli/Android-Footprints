@@ -381,7 +381,7 @@ public class MyProfileActivity extends AppCompatActivity {
     public void openEditor(int journalIndex) {
         Intent intent = new Intent(this, JournalEditorActivity.class);
         intent.putExtra(EDITOR_MODE, READ);
-        intent.putExtra(JOURNAL_OBJECT, journal_list.get(journalIndex));
+        intent.putExtra("journal_name", journal_list.get(journalIndex).getTitle());
         intent.putExtra("username",myUsername.getText().toString());
         startActivity(intent);
     }

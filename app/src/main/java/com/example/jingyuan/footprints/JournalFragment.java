@@ -77,6 +77,7 @@ public class JournalFragment extends Fragment {
     private static final int EDIT = 10;
 
     public String username;
+    public String journal_list;
     //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
     //    MyJournalViewAdapter madapter;
@@ -311,7 +312,7 @@ public class JournalFragment extends Fragment {
                     String lng = (String) snap.child("lng").getValue();
                     ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
                     Journal journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
-                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photo_string").getValue();
+                    ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
                     if (photo_string!=null) {
                         journal.setPhoto_string(photo_string);
                         ArrayList<Bitmap> photo_bit = photo_bit_to_string(photo_string);
@@ -507,7 +508,8 @@ public class JournalFragment extends Fragment {
         Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
         intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL) {
-            intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+//            intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+            intent.putExtra("journal_name",journals.get(journalIndex).getTitle());
             intent.putExtra("username", username);
         }
         else{
