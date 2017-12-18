@@ -77,6 +77,7 @@ public class JournalFragment extends Fragment {
     private static final int EDIT = 10;
 
     public String username;
+    public String journal_list;
     //    private SwipeMenuListView lv;
     public List<Journal> journals = new ArrayList<>();
     //    MyJournalViewAdapter madapter;
@@ -507,7 +508,8 @@ public class JournalFragment extends Fragment {
         Intent intent = new Intent(getActivity(), JournalEditorActivity.class);
         intent.putExtra(EDITOR_MODE, EDIT);
         if (journalIndex != NEW_JOURNAL) {
-            intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+//            intent.putExtra(JOURNAL_OBJECT, journals.get(journalIndex));
+            intent.putExtra("journal_name",journals.get(journalIndex).getTitle());
             intent.putExtra("username", username);
         }
         else{

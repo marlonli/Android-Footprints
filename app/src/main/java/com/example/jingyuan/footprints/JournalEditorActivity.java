@@ -92,7 +92,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private TextView tv_address;
     private ListView lv_of_tag;
     private HorizontalScrollView scrollView_buttons;
-    private LinearLayout bottomContainer;
+    public LinearLayout bottomContainer;
 
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
@@ -115,6 +115,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private ArrayList<String> tags_from_db;     //tag got from database
 
     public String username;
+    public String journal_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,236 +124,54 @@ public class JournalEditorActivity extends AppCompatActivity {
 
         // Get intent
         Intent intent = getIntent();
-        journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
+//        journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
         username = (String) intent.getStringExtra("username");
+        journal_name = (String) intent.getStringExtra("journal_name");
         editorMode =  (intent.getIntExtra(EDITOR_MODE, 10) == EDIT);
-
-
-        et_title = (EditText) findViewById(R.id.editText_title);
-        et_content = (EditText) findViewById(R.id.editText_content);
-        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-        tv_address = (TextView) findViewById(R.id.tv_location);
-        mResultReceiver = new AddressResultReceiver(new Handler());
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mAddressOutput = "";
-        photos = new ArrayList<>();
-        tags = new ArrayList<>();
-
-        if(journal != null){
-            et_title.setText(journal.getTitle());
-            et_content.setText(journal.getContent());
-            ArrayList<String> photos_string_tep = journal.getPhotos();
-            if(photos_string_tep != null) {
-                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-                photos = photos_tep;
-                Log.v("images", "add image: " + photos.size());
-                for (int i = 0; i < photos.size(); i++) {
-                    ImageView image = new ImageView(this);
-                    image.setImageBitmap(photos.get(i));
-                    bottomContainer.addView(image);
-                }
-            }
-            Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
-        }
-
-        if(journal != null) {
-            tags = journal.getTags();
-            Log.v("tags",Integer.toString(tags.size()));
-        }
-
-        list_Of_Num = new ArrayList<>();
-        list_Of_Map = new ArrayList<>();
-
-        // Set edit mode or read mode
-        if (!editorMode) {
-            et_title.setEnabled(false);
-            et_content.setKeyListener(null);
-            ib_camera.setEnabled(false);
-            ib_location.setEnabled(false);
-            ib_photos.setEnabled(false);
-            ib_save.setEnabled(false);
-            ib_tags.setEnabled(false);
-            tv_address.setVisibility(View.GONE);
-            scrollView_buttons.setVisibility(View.GONE);
-        }
-        else {
-            getCurrentLocation();
-            ShowAddress();
-        }
-
-        // TODO: edit journal if j != null
-
-        Log.v("Journal Editor", "journal: " + journal);
-//        if (journal != null) { // edit existing journal
-//            et_title.setText(journal.getTitle());
-//            et_content.setText(journal.getContent());
-////            String lat = journal.getLat();
-////            String lng = journal.getLng();
-////            mLastLocation.setLatitude(Double.valueOf(lat));
-////            mLastLocation.setLongitude(Double.valueOf(lng));
-////            // set Address
-////            startIntentService();
-//        }
-
-
-
-        // Set the botton click action for location(Map) button
-        ib_location.setOnClickListener(new View.OnClickListener() {
+        set_journal_from_database(journal_name, new LoadDataCallback() {
             @Override
-            public void onClick(View view){
-                getCurrentLocation();
-                ShowAddress();
+            public void loadFinish() {
+                ini();
             }
         });
 
-        // click on tags button to save the current location
-        ib_tags.setOnClickListener(new View.OnClickListener() {
+
+    }
+
+    public void set_journal_from_database(final String journalName,final LoadDataCallback callback){
+//        Journal new_journal = new Journal(null,null,0,null,null,null);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference Users = database.getReference("New_users");
+        DatabaseReference aaa = Users.child(username);
+        DatabaseReference bbb = aaa.child("journal_list");
+        bbb.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(View view){
-                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
-                view = factory.inflate(R.layout.tag_window, null);
-                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
-                list_Of_Map.clear();
-                if(tags != null) {
-                    for(int i = 0; i < tags.size(); i++) {
-                        String str_size = Integer.toString(i + 1)+".";
-                        list_Of_Num.add(str_size);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snap:dataSnapshot.getChildren()){
+                    String key = snap.getKey();
+                    if (key.equals(journalName)){
+                        String title = (String) snap.child("title").getValue();
+                        String content = (String) snap.child("content").getValue();
+                        long dateTimeLong = (long) snap.child("dateTimeLong").getValue();
+                        String dateTimeString = (String) snap.child("dateTimeString").getValue();
+                        String lat = (String) snap.child("lat").getValue();
+                        String lng = (String) snap.child("lng").getValue();
+                        ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
+                        journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
+                        ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
+                        journal.setPhoto_string(photo_string);
                     }
-                    for (int i = 0; i < tags.size(); i++) {
-                        Map<String, Object> listem = new HashMap<String, Object>();
-                        listem.put("index", list_Of_Num.get(i));
-                        listem.put("tag", tags.get(i));
-                        list_Of_Map.add(listem);
-                    }
-                    simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
-                            new String[]{"index", "tag"}, new int[]{
-                            R.id.listcontent_index, R.id.listcontent_content});
-                    lv_of_tag = view.findViewById(R.id.lv_tags);
-                    lv_of_tag.setAdapter(simp_adapter);
                 }
-                new AlertDialog.Builder(JournalEditorActivity.this)
-                        .setTitle("Tags")     //title
-                        .setView(view)
-                        .setPositiveButton("Save",
-                                new android.content.DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        String newtag = edit.getText().toString();
-                                        tags.add(newtag);
-                                        int size = tags.size();
-                                        String str_size = Integer.toString(size)+".";
-                                        Log.i("fdsd",str_size);
-                                        list_Of_Num.add(str_size);
-                                    }
-                                }).setNegativeButton("Cancel", null).create().show();
+                callback.loadFinish();
             }
-        });
 
-        ib_camera.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Intent picIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(picIntent, REQ_CODE_TAKE_PICTURE);
-            }
-        });
+            public void onCancelled(DatabaseError databaseError) {
 
-        ib_photos.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, IMAGE);
-            }
-        });
-
-        // Set date
-        // Format: Sat Dec 02 19:19:45 EST 2017
-        String[] date = Calendar.getInstance().getTime().toString().split(" ");
-        et_date = (EditText) findViewById(R.id.editText_date);
-        date_string = date[0] + ", " + date[1] + " " + date[2] + ", " + date[5];
-        et_date.setText(date_string);
-
-        final long current_time_long =  System.currentTimeMillis();
-
-        // Set save button and image button
-        // TODO: set image button add photo
-        ib_save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // TODO: set return value (save to database)
-
-                // If it is a null journal
-                if (journal==null){
-
-                    // Set journal class
-                    journal = new Journal(et_title.getText().toString(), tags,current_time_long,
-                    currentLatitude+"",currentLongitude+"", et_content.getText().toString());
-
-                    ArrayList<String> photo_string = photo_to_string(photos);
-                    journal.setPhoto_string(photo_string);
-
-                    // Save the new journal in the database.
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference Users = database.getReference("New_users");
-                    Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
-                }
-                else{
-                    // Update the new journal
-                    ArrayList<String> photo_string = photo_to_string(photos);
-                    journal.setPhoto_string(photo_string);
-                    if (tags.size()!=0 && tags!=journal.getTags()){
-                        journal.setTags(tags);
-                    }
-                    String title_new = et_title.getText().toString();
-                    String content_new = et_content.getText().toString();
-                    journal.setContent(content_new);
-                    journal.setTitle(title_new);
-
-                    //save data here:
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    final DatabaseReference Users = database.getReference("New_users");
-//                    DatabaseReference AAA = Users.child(username).child("journal_list");
-                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot snap:dataSnapshot.getChildren()){
-                                String key_title = snap.getKey();
-                                if (key_title.equals(journal.getTitle())){
-                                    Map<String,Object> UP = new HashMap<>();
-                                    UP.put("/"+username+"/journal_list/"+key_title,journal);
-                                    Users.updateChildren(UP);
-                                    finish();
-                                    break;
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                }
-
-//                Users.child("journal").push().setValue(journal.getContent());
-
-
-//                Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
-//
-//                intent.putExtra(JOURNAL_OBJECT, journal);
-////                intent.putExtra("addPerson", add);
-////                intent.putExtra("size", relation.size());
-//
-//                setResult(JOURNAL_EDITOR_REQ, intent);
-                finish();
             }
         });
     }
+
 
     // Convert bitmap to string
     public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
@@ -480,6 +299,160 @@ public class JournalEditorActivity extends AppCompatActivity {
             getCurrentLocation();
             ShowAddress();
         }
+
+
+        // Set the botton click action for location(Map) button
+        ib_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                getCurrentLocation();
+                ShowAddress();
+            }
+        });
+
+        // click on tags button to save the current location
+        ib_tags.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
+                view = factory.inflate(R.layout.tag_window, null);
+                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
+                list_Of_Map.clear();
+                if(tags != null) {
+                    for(int i = 0; i < tags.size(); i++) {
+                        String str_size = Integer.toString(i + 1)+".";
+                        list_Of_Num.add(str_size);
+                    }
+                    for (int i = 0; i < tags.size(); i++) {
+                        Map<String, Object> listem = new HashMap<String, Object>();
+                        listem.put("index", list_Of_Num.get(i));
+                        listem.put("tag", tags.get(i));
+                        list_Of_Map.add(listem);
+                    }
+                    simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
+                            new String[]{"index", "tag"}, new int[]{
+                            R.id.listcontent_index, R.id.listcontent_content});
+                    lv_of_tag = view.findViewById(R.id.lv_tags);
+                    lv_of_tag.setAdapter(simp_adapter);
+                }
+                new AlertDialog.Builder(JournalEditorActivity.this)
+                        .setTitle("Tags")     //title
+                        .setView(view)
+                        .setPositiveButton("Save",
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        String newtag = edit.getText().toString();
+                                        tags.add(newtag);
+                                        int size = tags.size();
+                                        String str_size = Integer.toString(size)+".";
+                                        Log.i("fdsd",str_size);
+                                        list_Of_Num.add(str_size);
+                                    }
+                                }).setNegativeButton("Cancel", null).create().show();
+            }
+        });
+
+        ib_camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent picIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(picIntent, REQ_CODE_TAKE_PICTURE);
+            }
+        });
+
+        ib_photos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, IMAGE);
+            }
+        });
+
+        // Set date
+        // Format: Sat Dec 02 19:19:45 EST 2017
+        String[] date = Calendar.getInstance().getTime().toString().split(" ");
+        et_date = (EditText) findViewById(R.id.editText_date);
+        date_string = date[0] + ", " + date[1] + " " + date[2] + ", " + date[5];
+        et_date.setText(date_string);
+
+        final long current_time_long =  System.currentTimeMillis();
+
+        // Set save button and image button
+        // TODO: set image button add photo
+        ib_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: set return value (save to database)
+
+                // If it is a null journal
+                if (journal==null){
+
+                    // Set journal class
+                    journal = new Journal(et_title.getText().toString(), tags,current_time_long,
+                            currentLatitude+"",currentLongitude+"", et_content.getText().toString());
+
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
+
+                    // Save the new journal in the database.
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference Users = database.getReference("New_users");
+                    Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
+                }
+                else{
+                    // Update the new journal
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
+                    if (tags.size()!=0 && tags!=journal.getTags()){
+                        journal.setTags(tags);
+                    }
+                    String title_new = et_title.getText().toString();
+                    String content_new = et_content.getText().toString();
+                    journal.setContent(content_new);
+                    journal.setTitle(title_new);
+
+                    //save data here:
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    final DatabaseReference Users = database.getReference("New_users");
+//                    DatabaseReference AAA = Users.child(username).child("journal_list");
+                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snap:dataSnapshot.getChildren()){
+                                String key_title = snap.getKey();
+                                if (key_title.equals(journal.getTitle())){
+                                    Map<String,Object> UP = new HashMap<>();
+                                    UP.put("/"+username+"/journal_list/"+key_title,journal);
+                                    Users.updateChildren(UP);
+                                    finish();
+                                    break;
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+//                Users.child("journal").push().setValue(journal.getContent());
+
+
+//                Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
+//
+//                intent.putExtra(JOURNAL_OBJECT, journal);
+////                intent.putExtra("addPerson", add);
+////                intent.putExtra("size", relation.size());
+//
+//                setResult(JOURNAL_EDITOR_REQ, intent);
+                finish();
+            }
+        });
     }
 
 //    private void initialization() {
@@ -557,6 +530,235 @@ public class JournalEditorActivity extends AppCompatActivity {
 //
 //        startActivity(intent);
 //    }
+
+    public void ini(){
+        et_title = (EditText) findViewById(R.id.editText_title);
+        et_content = (EditText) findViewById(R.id.editText_content);
+        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
+        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
+        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
+        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
+        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+        tv_address = (TextView) findViewById(R.id.tv_location);
+        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
+        mResultReceiver = new AddressResultReceiver(new Handler());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mAddressOutput = "";
+        photos = new ArrayList<>();
+        tags = new ArrayList<>();
+
+        if(journal != null){
+            et_title.setText(journal.getTitle());
+            et_content.setText(journal.getContent());
+            if (editorMode) {
+                ArrayList<String> photos_string_tep = journal.getPhotos();
+                if(photos_string_tep != null) {
+                    ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
+                    photos = photos_tep;
+                    Log.v("images", "add image: " + photos.size());
+                    for (int i = 0; i < photos.size(); i++) {
+                        ImageView image = new ImageView(this);
+                        image.setImageBitmap(photos.get(i));
+                        bottomContainer.addView(image);
+                    }
+                }
+                Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
+            }
+
+        }
+
+        if(journal != null) {
+            tags = journal.getTags();
+            Log.v("tags",Integer.toString(tags.size()));
+        }
+
+        list_Of_Num = new ArrayList<>();
+        list_Of_Map = new ArrayList<>();
+
+        // Set edit mode or read mode
+        if (!editorMode) {
+            et_title.setEnabled(false);
+            et_content.setKeyListener(null);
+            ib_camera.setEnabled(false);
+            ib_location.setEnabled(false);
+            ib_photos.setEnabled(false);
+            ib_save.setEnabled(false);
+            ib_tags.setEnabled(false);
+            tv_address.setVisibility(View.GONE);
+            scrollView_buttons.setVisibility(View.GONE);
+        }
+        else {
+            getCurrentLocation();
+            ShowAddress();
+        }
+
+        // TODO: edit journal if j != null
+
+        Log.v("Journal Editor", "journal: " + journal);
+//        if (journal != null) { // edit existing journal
+//            et_title.setText(journal.getTitle());
+//            et_content.setText(journal.getContent());
+////            String lat = journal.getLat();
+////            String lng = journal.getLng();
+////            mLastLocation.setLatitude(Double.valueOf(lat));
+////            mLastLocation.setLongitude(Double.valueOf(lng));
+////            // set Address
+////            startIntentService();
+//        }
+
+        // Set the botton click action for location(Map) button
+        ib_location.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                getCurrentLocation();
+                ShowAddress();
+            }
+        });
+
+        // click on tags button to save the current location
+        ib_tags.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view){
+                LayoutInflater factory = LayoutInflater.from(JournalEditorActivity.this);
+                view = factory.inflate(R.layout.tag_window, null);
+                final EditText edit=(EditText)view.findViewById(R.id.window_tag_et);
+                list_Of_Map.clear();
+                if(tags != null) {
+                    for(int i = 0; i < tags.size(); i++) {
+                        String str_size = Integer.toString(i + 1)+".";
+                        list_Of_Num.add(str_size);
+                    }
+                    for (int i = 0; i < tags.size(); i++) {
+                        Map<String, Object> listem = new HashMap<String, Object>();
+                        listem.put("index", list_Of_Num.get(i));
+                        listem.put("tag", tags.get(i));
+                        list_Of_Map.add(listem);
+                    }
+                    simp_adapter = new SimpleAdapter(view.getContext(), list_Of_Map, R.layout.listcontent,
+                            new String[]{"index", "tag"}, new int[]{
+                            R.id.listcontent_index, R.id.listcontent_content});
+                    lv_of_tag = view.findViewById(R.id.lv_tags);
+                    lv_of_tag.setAdapter(simp_adapter);
+                }
+                new AlertDialog.Builder(JournalEditorActivity.this)
+                        .setTitle("Tags")     //title
+                        .setView(view)
+                        .setPositiveButton("Save",
+                                new android.content.DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        String newtag = edit.getText().toString();
+                                        tags.add(newtag);
+                                        int size = tags.size();
+                                        String str_size = Integer.toString(size)+".";
+                                        Log.i("fdsd",str_size);
+                                        list_Of_Num.add(str_size);
+                                    }
+                                }).setNegativeButton("Cancel", null).create().show();
+            }
+        });
+
+        ib_camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent picIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivityForResult(picIntent, REQ_CODE_TAKE_PICTURE);
+            }
+        });
+
+        ib_photos.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_PICK,
+                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, IMAGE);
+            }
+        });
+
+        // Set date
+        // Format: Sat Dec 02 19:19:45 EST 2017
+        String[] date = Calendar.getInstance().getTime().toString().split(" ");
+        et_date = (EditText) findViewById(R.id.editText_date);
+        date_string = date[0] + ", " + date[1] + " " + date[2] + ", " + date[5];
+        et_date.setText(date_string);
+
+        final long current_time_long =  System.currentTimeMillis();
+
+        // Set save button and image button
+        // TODO: set image button add photo
+        ib_save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // TODO: set return value (save to database)
+
+                // If it is a null journal
+                if (journal==null){
+
+                    // Set journal class
+                    journal = new Journal(et_title.getText().toString(), tags,current_time_long,
+                            currentLatitude+"",currentLongitude+"", et_content.getText().toString());
+
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
+
+                    // Save the new journal in the database.
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    DatabaseReference Users = database.getReference("New_users");
+                    Users.child(username).child("journal_list").child(journal.getTitle()).setValue(journal);
+                }
+                else{
+                    // Update the new journal
+                    ArrayList<String> photo_string = photo_to_string(photos);
+                    journal.setPhoto_string(photo_string);
+                    if (tags.size()!=0 && tags!=journal.getTags()){
+                        journal.setTags(tags);
+                    }
+                    String title_new = et_title.getText().toString();
+                    String content_new = et_content.getText().toString();
+                    journal.setContent(content_new);
+                    journal.setTitle(title_new);
+
+                    //save data here:
+                    FirebaseDatabase database = FirebaseDatabase.getInstance();
+                    final DatabaseReference Users = database.getReference("New_users");
+//                    DatabaseReference AAA = Users.child(username).child("journal_list");
+                    Users.child(username).child("journal_list").addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot snap:dataSnapshot.getChildren()){
+                                String key_title = snap.getKey();
+                                if (key_title.equals(journal.getTitle())){
+                                    Map<String,Object> UP = new HashMap<>();
+                                    UP.put("/"+username+"/journal_list/"+key_title,journal);
+                                    Users.updateChildren(UP);
+                                    finish();
+                                    break;
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+//                Users.child("journal").push().setValue(journal.getContent());
+
+
+//                Intent intent = new Intent(JournalEditorActivity.this, MainActivity.class);
+//
+//                intent.putExtra(JOURNAL_OBJECT, journal);
+////                intent.putExtra("addPerson", add);
+////                intent.putExtra("size", relation.size());
+//
+//                setResult(JOURNAL_EDITOR_REQ, intent);
+                finish();
+            }
+        });
+    }
 
     private void getCurrentLocation() {
         if (!checkPermissionsforcoarse()) {
