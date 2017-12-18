@@ -177,6 +177,7 @@ class SingleAlbumAdapter extends BaseAdapter {
         return position;
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         SingleAlbumViewHolder holder = null;
         if (convertView == null) {
@@ -199,6 +200,7 @@ class SingleAlbumAdapter extends BaseAdapter {
             }
             byte[] image_byte = Base64.decode(song,Base64.DEFAULT);
             Glide.with(activity)
+                    .asBitmap()
                     .load(image_byte) // Uri of the picture
                     .into(holder.galleryImage);
 
