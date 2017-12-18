@@ -214,24 +214,25 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-//            try {
-//                Log.e("photo","album function is called");
-//                handleImageOnKitKat(intent);
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-            Uri mImageCaptureUri = intent.getData();
-            Bitmap photoBmp = null;
-            if (mImageCaptureUri != null) {
-                photoBmp = scal(mImageCaptureUri);
-                photos.add(photoBmp);
-                Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
-                appendImages_process(photoBmp);
-                if(photoBmp != null && !photoBmp.isRecycled()){
-                    photoBmp.recycle();
-                    photoBmp = null;
-                }
+            try {
+                Log.e("photo","album function is called");
+                handleImageOnKitKat(intent);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
+    }
+
+    private void handleImageOnKitKat(Intent intent) throws IOException {
+        String imagePath = null;
+        Uri uri = intent.getData();
+        Bitmap photoBmp = null;
+        if (uri != null) {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+            photos.add(bitmap);
+            Log.e("phots", "after add(from album) now exist " + Integer.toString(photos.size()));
+        } else{
+            Log.e("photo","album: uri is null");
         }
     }
 
