@@ -30,8 +30,11 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -339,11 +342,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                     ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
                     photos = photos_tep;
                     Log.v("images", "add image: " + photos.size());
-                    for (int i = 0; i < photos.size(); i++) {
-                        ImageView image = new ImageView(this);
-                        image.setImageBitmap(photos.get(i));
-                        bottomContainer.addView(image);
-                    }
+                    appendImages();
+
                 }
                 Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
             }
@@ -537,6 +537,23 @@ public class JournalEditorActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void appendImages() {
+
+        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+//        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT );
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+        for (int i = 0; i < photos.size(); i++) {
+            ImageView image = new ImageView(this);
+            image.setImageBitmap(photos.get(i));
+            image.setLayoutParams(layoutParams);
+            image.setScaleType(ImageView.ScaleType.CENTER);
+            image.setPadding(2,0,2,0);
+            bottomContainer.addView(image);
+        }
     }
 
     private void getCurrentLocation() {
