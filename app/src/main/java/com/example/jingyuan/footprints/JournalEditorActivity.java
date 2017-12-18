@@ -192,7 +192,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             Bitmap photo_tmp = photo_bit.get(i);
             if(photo_tmp!=null){
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                photo_tmp.compress(Bitmap.CompressFormat.PNG,100,baos);
+                photo_tmp.compress(Bitmap.CompressFormat.JPEG,20,baos);
                 byte[] b = baos.toByteArray();
                 String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
                 photo_string.add(imageEncoded);
@@ -765,4 +765,6 @@ public class JournalEditorActivity extends AppCompatActivity {
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(getString(actionStringId), listener).show();
     }
+
+
 }

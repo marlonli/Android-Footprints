@@ -29,6 +29,7 @@ public class GalleryPreview extends AppCompatActivity {
         byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
         GalleryPreviewImg = (ImageView) findViewById(R.id.GalleryPreviewImg);
         Glide.with(GalleryPreview.this)
+                .asBitmap()
                 .load(image_byte) // Uri of the picture
                 .into(GalleryPreviewImg);
     }

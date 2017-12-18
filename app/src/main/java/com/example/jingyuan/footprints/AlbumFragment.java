@@ -242,8 +242,30 @@ public class AlbumFragment extends Fragment {
 //            cursor.close();
 //            Collections.sort(albumList, new MapComparator(Utilities.KEY_TIMESTAMP, "dsc")); // Arranging photo album by timestamp decending
 
+            read_image_from_database(new LoadDataCallback() {
+                @Override
+                public void loadFinish() {
+                    AlbumAdapter adapter = new AlbumAdapter(getActivity(), albumList);
+                    galleryGridView.setAdapter(adapter);
+                    galleryGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        public void onItemClick(AdapterView<?> parent, View view,
+                                                final int position, long id) {
+                            Intent intent = new Intent(getActivity(), AlbumActivity.class);
+                            intent.putExtra("name", albumList.get(+position).get(Utilities.KEY_ALBUM));
+                            intent.putExtra("username",username);
+                            startActivity(intent);
+                        }
+                    });
+                }
+            });
 
 
+
+
+            return xml;
+        }
+
+        public void read_image_from_database(final LoadDataCallback callback){
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             final DatabaseReference Users = database.getReference("New_users");
             DatabaseReference aaa = Users.child(username);
@@ -255,7 +277,7 @@ public class AlbumFragment extends Fragment {
                         String key = snap.getKey();
                         ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
                         Utilities u = new Utilities();
-                        if (photo_string!=null){
+                        if (photo_string!=null && photo_string.size()!=0){
                             String photo_string_one = photo_string.get(0);
                             HashMap<String,String> album_one = u.set_value(key,photo_string_one,""+photo_string.size());
 //                            HashMap<String,String> album_one = new HashMap<>();
@@ -267,6 +289,7 @@ public class AlbumFragment extends Fragment {
                             albumList.add(album_one);
                         }
                     }
+                    callback.loadFinish();
 
                 }
 
@@ -275,9 +298,6 @@ public class AlbumFragment extends Fragment {
 
                 }
             });
-
-
-            return xml;
         }
 
         public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
@@ -300,7 +320,7 @@ public class AlbumFragment extends Fragment {
                 public void onItemClick(AdapterView<?> parent, View view,
                                         final int position, long id) {
                     Intent intent = new Intent(getActivity(), AlbumActivity.class);
-                    intent.putExtra("name", albumList.get(+position).get(Utilities.KEY_ALBUM));
+                    intent.putExtra("name", albumList.get(position).get(Utilities.KEY_ALBUM));
                     intent.putExtra("username",username);
                     startActivity(intent);
                 }
@@ -327,6 +347,7 @@ class AlbumAdapter extends BaseAdapter {
         return position;
     }
 
+    @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         AlbumViewHolder holder = null;
         if (convertView == null) {
@@ -353,9 +374,12 @@ class AlbumAdapter extends BaseAdapter {
             holder.gallery_count.setText(song.get(Utilities.KEY_COUNT)+" Photos");
             String image_string = song.get(Utilities.KEY_BYTE);
             byte[] image_byte = Base64.decode(image_string,Base64.DEFAULT);
-            Glide.with(activity)
-                    .load(image_byte)
-                    .into(holder.galleryImage);
+            if (image_string != null) {
+                Glide.with(activity)
+                        .asBitmap()
+                        .load(image_byte)
+                        .into(holder.galleryImage);
+            }
 
 
         } catch (Exception e) {}
