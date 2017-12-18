@@ -92,7 +92,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private TextView tv_address;
     private ListView lv_of_tag;
     private HorizontalScrollView scrollView_buttons;
-    private LinearLayout bottomContainer;
+    public LinearLayout bottomContainer;
 
     private FusedLocationProviderClient mFusedLocationClient;
     protected Location mLastLocation;
@@ -115,6 +115,7 @@ public class JournalEditorActivity extends AppCompatActivity {
     private ArrayList<String> tags_from_db;     //tag got from database
 
     public String username;
+    public String journal_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,11 +124,195 @@ public class JournalEditorActivity extends AppCompatActivity {
 
         // Get intent
         Intent intent = getIntent();
-        journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
+//        journal = (Journal) intent.getSerializableExtra(JOURNAL_OBJECT);
         username = (String) intent.getStringExtra("username");
+        journal_name = (String) intent.getStringExtra("journal_name");
         editorMode =  (intent.getIntExtra(EDITOR_MODE, 10) == EDIT);
+        set_journal_from_database(journal_name, new LoadDataCallback() {
+            @Override
+            public void loadFinish() {
+                ini();
+            }
+        });
 
 
+    }
+
+    public void set_journal_from_database(final String journalName,final LoadDataCallback callback){
+//        Journal new_journal = new Journal(null,null,0,null,null,null);
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        final DatabaseReference Users = database.getReference("New_users");
+        DatabaseReference aaa = Users.child(username);
+        DatabaseReference bbb = aaa.child("journal_list");
+        bbb.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot snap:dataSnapshot.getChildren()){
+                    String key = snap.getKey();
+                    if (key.equals(journalName)){
+                        String title = (String) snap.child("title").getValue();
+                        String content = (String) snap.child("content").getValue();
+                        long dateTimeLong = (long) snap.child("dateTimeLong").getValue();
+                        String dateTimeString = (String) snap.child("dateTimeString").getValue();
+                        String lat = (String) snap.child("lat").getValue();
+                        String lng = (String) snap.child("lng").getValue();
+                        ArrayList<String> tags = (ArrayList<String>) snap.child("tags").getValue();
+                        journal = new Journal(title, tags,dateTimeLong,lat,lng, content);
+                        ArrayList<String> photo_string = (ArrayList<String>) snap.child("photoString").getValue();
+                        journal.setPhoto_string(photo_string);
+                    }
+                }
+                callback.loadFinish();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+    // Convert bitmap to string
+    public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
+        ArrayList<String> photo_string = new ArrayList<String>();
+        for (int i=0;i<photo_bit.size();i++){
+            Bitmap photo_tmp = photo_bit.get(i);
+            if(photo_tmp!=null){
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                photo_tmp.compress(Bitmap.CompressFormat.PNG,100,baos);
+                byte[] b = baos.toByteArray();
+                String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
+                photo_string.add(imageEncoded);
+            }
+        }
+        return photo_string;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent intent) {
+        if (requestCode == REQ_CODE_TAKE_PICTURE
+                && resultCode == RESULT_OK && intent != null) {
+            Bitmap  photo = intent.getParcelableExtra("data");
+            photos.add(photo);
+            String size = Integer.toString(photos.size());
+            Log.e("photo","after add now exist " + size);
+        }
+
+        if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
+            try {
+                handleImageOnKitKat(intent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void handleImageOnKitKat(Intent intent) throws IOException {
+        String imagePath = null;
+        Uri uri = intent.getData();
+        Bitmap photoBmp = null;
+        if (uri != null) {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
+            photos.add(bitmap);
+            Log.e("phots", "after add(from album) now exist " + Integer.toString(photos.size()));
+        } else{
+            Log.e("photo","album: uri is null");
+        }
+    }
+
+
+
+
+    public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
+        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
+        for (int i=0;i<photo_string.size();i++){
+            String photo_string_tmp = photo_string.get(i);
+            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
+            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
+            photo_bit.add(photo_bit_tmp);
+        }
+        return photo_bit;
+    }
+
+//    private void initialization() {
+//        et_title = (EditText) findViewById(R.id.editText_title);
+//        et_content = (EditText) findViewById(R.id.editText_content);
+//        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
+//        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
+//        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
+//        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
+//        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
+//        tv_address = (TextView) findViewById(R.id.tv_location);
+//        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
+//        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
+//        mResultReceiver = new AddressResultReceiver(new Handler());
+//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        mAddressOutput = "";
+//
+//        if(journal != null){
+//            et_title.setText(journal.getTitle());
+//            et_content.setText(journal.getContent());
+//            ArrayList<String> photos_string_tep = journal.getPhotos();
+//
+//            if(photos_string_tep != null) {
+//                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
+//                photos = photos_tep;
+//                Log.v("images", "add image: " + photos.size());
+//                for (int i = 0; i < photos.size(); i++) {
+//                    ImageView image = new ImageView(this);
+//                    image.setImageBitmap(photos.get(i));
+//                    bottomContainer.addView(image);
+//                }
+//            }
+//
+//            tags_from_db = journal.getTags();
+//            if(tags_from_db != null)
+//                tags = tags_from_db;
+//            else {
+//                tags = new ArrayList<>();
+//            }
+//
+//        }
+//        else {
+//            photos = new ArrayList<>();
+//            tags = new ArrayList<>();
+//        }
+//
+//        list_Of_Num = new ArrayList<>();
+//        list_Of_Map = new ArrayList<>();
+//
+//        // Set edit mode or read mode
+//        if (!editorMode) {
+//            et_title.setEnabled(false);
+//            et_content.setKeyListener(null);
+//            ib_camera.setEnabled(false);
+//            ib_location.setEnabled(false);
+//            ib_photos.setEnabled(false);
+//            ib_save.setEnabled(false);
+//            ib_tags.setEnabled(false);
+//            tv_address.setVisibility(View.GONE);
+//            scrollView_buttons.setVisibility(View.GONE);
+//        }
+//        else {
+//            getCurrentLocation();
+//            ShowAddress();
+//        }
+//    }
+
+
+//    private void ShowMap(){
+//        Intent intent = new Intent();
+//        intent.setClass(JournalEditorActivity.this, MapsActivity.class);
+//
+//        intent.putExtra("latitude", currentLatitude);
+//        intent.putExtra("longitude", currentLongitude);
+//
+//        startActivity(intent);
+//    }
+
+    public void ini(){
         et_title = (EditText) findViewById(R.id.editText_title);
         et_content = (EditText) findViewById(R.id.editText_content);
         ib_save = (ImageButton) findViewById(R.id.imageButton_save);
@@ -136,6 +321,8 @@ public class JournalEditorActivity extends AppCompatActivity {
         ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
         ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
         tv_address = (TextView) findViewById(R.id.tv_location);
+        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
+        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
         mResultReceiver = new AddressResultReceiver(new Handler());
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mAddressOutput = "";
@@ -145,24 +332,24 @@ public class JournalEditorActivity extends AppCompatActivity {
         if(journal != null){
             et_title.setText(journal.getTitle());
             et_content.setText(journal.getContent());
-            ArrayList<String> photos_string_tep = journal.getPhotos();
-            if(photos_string_tep != null) {
-                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-                photos = photos_tep;
-                Log.v("images", "add image: " + photos.size());
-                for (int i = 0; i < photos.size(); i++) {
-                    ImageView image = new ImageView(this);
-                    image.setImageBitmap(photos.get(i));
-                    bottomContainer.addView(image);
+            if (editorMode) {
+                tags = journal.getTags();
+                ArrayList<String> photos_string_tep = journal.getPhotos();
+                if(photos_string_tep != null) {
+                    ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
+                    photos = photos_tep;
+                    Log.v("images", "add image: " + photos.size());
+                    for (int i = 0; i < photos.size(); i++) {
+                        ImageView image = new ImageView(this);
+                        image.setImageBitmap(photos.get(i));
+                        bottomContainer.addView(image);
+                    }
                 }
+                Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
             }
-            Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
+
         }
 
-        if(journal != null) {
-            tags = journal.getTags();
-            Log.v("tags",Integer.toString(tags.size()));
-        }
 
         list_Of_Num = new ArrayList<>();
         list_Of_Map = new ArrayList<>();
@@ -197,8 +384,6 @@ public class JournalEditorActivity extends AppCompatActivity {
 ////            // set Address
 ////            startIntentService();
 //        }
-
-
 
         // Set the botton click action for location(Map) button
         ib_location.setOnClickListener(new View.OnClickListener() {
@@ -291,7 +476,7 @@ public class JournalEditorActivity extends AppCompatActivity {
 
                     // Set journal class
                     journal = new Journal(et_title.getText().toString(), tags,current_time_long,
-                    currentLatitude+"",currentLongitude+"", et_content.getText().toString());
+                            currentLatitude+"",currentLongitude+"", et_content.getText().toString());
 
                     ArrayList<String> photo_string = photo_to_string(photos);
                     journal.setPhoto_string(photo_string);
@@ -353,210 +538,6 @@ public class JournalEditorActivity extends AppCompatActivity {
             }
         });
     }
-
-    // Convert bitmap to string
-    public ArrayList<String> photo_to_string(ArrayList<Bitmap> photo_bit){
-        ArrayList<String> photo_string = new ArrayList<String>();
-        for (int i=0;i<photo_bit.size();i++){
-            Bitmap photo_tmp = photo_bit.get(i);
-            if(photo_tmp!=null){
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                photo_tmp.compress(Bitmap.CompressFormat.PNG,100,baos);
-                byte[] b = baos.toByteArray();
-                String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
-                photo_string.add(imageEncoded);
-            }
-        }
-        return photo_string;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode,
-                                 Intent intent) {
-        if (requestCode == REQ_CODE_TAKE_PICTURE
-                && resultCode == RESULT_OK && intent != null) {
-            Bitmap  photo = intent.getParcelableExtra("data");
-            photos.add(photo);
-            String size = Integer.toString(photos.size());
-            Log.e("photo","after add now exist " + size);
-        }
-
-        if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-            try {
-                handleImageOnKitKat(intent);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void handleImageOnKitKat(Intent intent) throws IOException {
-        String imagePath = null;
-        Uri uri = intent.getData();
-        Bitmap photoBmp = null;
-        if (uri != null) {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-            photos.add(bitmap);
-            Log.e("phots", "after add(from album) now exist " + Integer.toString(photos.size()));
-        } else{
-            Log.e("photo","album: uri is null");
-        }
-    }
-
-
-
-
-    public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
-        ArrayList<Bitmap> photo_bit = new ArrayList<Bitmap>();
-        for (int i=0;i<photo_string.size();i++){
-            String photo_string_tmp = photo_string.get(i);
-            byte[] decodeByte = Base64.decode(photo_string_tmp,0);
-            Bitmap photo_bit_tmp = BitmapFactory.decodeByteArray(decodeByte,0,decodeByte.length);
-            photo_bit.add(photo_bit_tmp);
-        }
-        return photo_bit;
-    }
-
-    private void initialization() {
-        et_title = (EditText) findViewById(R.id.editText_title);
-        et_content = (EditText) findViewById(R.id.editText_content);
-        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-        tv_address = (TextView) findViewById(R.id.tv_location);
-        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
-        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
-        mResultReceiver = new AddressResultReceiver(new Handler());
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        mAddressOutput = "";
-
-        if(journal != null){
-            et_title.setText(journal.getTitle());
-            et_content.setText(journal.getContent());
-            ArrayList<String> photos_string_tep = journal.getPhotos();
-
-            if(photos_string_tep != null) {
-                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-                photos = photos_tep;
-                Log.v("images", "add image: " + photos.size());
-                for (int i = 0; i < photos.size(); i++) {
-                    ImageView image = new ImageView(this);
-                    image.setImageBitmap(photos.get(i));
-                    bottomContainer.addView(image);
-                }
-        }
-
-            tags_from_db = journal.getTags();
-            if(tags_from_db != null)
-                tags = tags_from_db;
-            else {
-                tags = new ArrayList<>();
-            }
-
-        }
-        else {
-            photos = new ArrayList<>();
-            tags = new ArrayList<>();
-        }
-
-        list_Of_Num = new ArrayList<>();
-        list_Of_Map = new ArrayList<>();
-
-        // Set edit mode or read mode
-        if (!editorMode) {
-            et_title.setEnabled(false);
-            et_content.setKeyListener(null);
-            ib_camera.setEnabled(false);
-            ib_location.setEnabled(false);
-            ib_photos.setEnabled(false);
-            ib_save.setEnabled(false);
-            ib_tags.setEnabled(false);
-            tv_address.setVisibility(View.GONE);
-            scrollView_buttons.setVisibility(View.GONE);
-        }
-        else {
-            getCurrentLocation();
-            ShowAddress();
-        }
-    }
-
-//    private void initialization() {
-//        et_title = (EditText) findViewById(R.id.editText_title);
-//        et_content = (EditText) findViewById(R.id.editText_content);
-//        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-//        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-//        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-//        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-//        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-//        tv_address = (TextView) findViewById(R.id.tv_location);
-//        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
-//        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
-//        mResultReceiver = new AddressResultReceiver(new Handler());
-//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        mAddressOutput = "";
-//
-//        if(journal != null){
-//            et_title.setText(journal.getTitle());
-//            et_content.setText(journal.getContent());
-//            ArrayList<String> photos_string_tep = journal.getPhotos();
-//
-//            if(photos_string_tep != null) {
-//                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-//                photos = photos_tep;
-//                Log.v("images", "add image: " + photos.size());
-//                for (int i = 0; i < photos.size(); i++) {
-//                    ImageView image = new ImageView(this);
-//                    image.setImageBitmap(photos.get(i));
-//                    bottomContainer.addView(image);
-//                }
-//            }
-//
-//            tags_from_db = journal.getTags();
-//            if(tags_from_db != null)
-//                tags = tags_from_db;
-//            else {
-//                tags = new ArrayList<>();
-//            }
-//
-//        }
-//        else {
-//            photos = new ArrayList<>();
-//            tags = new ArrayList<>();
-//        }
-//
-//        list_Of_Num = new ArrayList<>();
-//        list_Of_Map = new ArrayList<>();
-//
-//        // Set edit mode or read mode
-//        if (!editorMode) {
-//            et_title.setEnabled(false);
-//            et_content.setKeyListener(null);
-//            ib_camera.setEnabled(false);
-//            ib_location.setEnabled(false);
-//            ib_photos.setEnabled(false);
-//            ib_save.setEnabled(false);
-//            ib_tags.setEnabled(false);
-//            tv_address.setVisibility(View.GONE);
-//            scrollView_buttons.setVisibility(View.GONE);
-//        }
-//        else {
-//            getCurrentLocation();
-//            ShowAddress();
-//        }
-//    }
-
-
-//    private void ShowMap(){
-//        Intent intent = new Intent();
-//        intent.setClass(JournalEditorActivity.this, MapsActivity.class);
-//
-//        intent.putExtra("latitude", currentLatitude);
-//        intent.putExtra("longitude", currentLongitude);
-//
-//        startActivity(intent);
-//    }
 
     private void getCurrentLocation() {
         if (!checkPermissionsforcoarse()) {
