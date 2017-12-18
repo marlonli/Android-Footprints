@@ -262,44 +262,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         return bitmap;
     }
 
-//    private Bitmap getThumbnail(Uri uri, int reqWidth, int reqHeight) {
-//        Bitmap srcBmp = uriToBitmap(uri);
-//        // If picture is smaller than required thumbnail
-//        Bitmap dstBmp;
-//        if (srcBmp.getWidth() < reqWidth && srcBmp.getHeight() < reqHeight) {
-//            Log.e("photo", "album meets requirement");
-//            dstBmp = ThumbnailUtils.extractThumbnail(srcBmp, reqWidth, reqHeight);
-//            // Otherwise the ratio between measures is calculated to fit requested thumbnail's one
-//        } else {
-//            Log.e("photo", "album should be compressed");
-//            int x = 0, y = 0, width = srcBmp.getWidth(), height = srcBmp.getHeight();
-//            float ratio = ((float) reqWidth / (float) reqHeight) * ((float) srcBmp.getHeight() / (float) srcBmp.getWidth());
-//            if (ratio < 1) {
-//                x = (int) (srcBmp.getWidth() - srcBmp.getWidth() * ratio) / 2;
-//                width = (int) (srcBmp.getWidth() * ratio);
-//            } else {
-//                y = (int) (srcBmp.getHeight() - srcBmp.getHeight() / ratio) / 2;
-//                height = (int) (srcBmp.getHeight() / ratio);
-//            }
-//            dstBmp = Bitmap.createBitmap(srcBmp, x, y, width, height);
-//        }
-//        return dstBmp;
-//    }
-
-
-//    private void handleImageOnKitKat(Intent intent) throws IOException {
-//        Uri uri = intent.getData();
-//        Bitmap photoBmp = null;
-//        if (uri != null) {
-//            Log.e("photo","uri is not null");
-//            photoBmp = uriToBitmap(uri);
-//            photos.add(photoBmp);
-//            Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
-//            appendImages_process(photoBmp);
-//        } else{
-//            Log.e("photo","album: uri is null");
-//        }
-//    }
 
     private Bitmap uriToBitmap(Uri selectedFileUri) {
         Bitmap image = null;
