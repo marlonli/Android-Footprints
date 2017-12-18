@@ -165,6 +165,7 @@
             <View
                 android:layout_width="1dip"
                 android:layout_height="24dp"
+                android:layout_marginRight="12dp"
                 android:background="@color/light_grey"
                 android:layout_gravity="center_vertical"
                 />

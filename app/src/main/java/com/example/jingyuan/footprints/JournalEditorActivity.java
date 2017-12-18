@@ -17,6 +17,7 @@ import android.location.Location;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
 import android.os.ResultReceiver;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -30,8 +31,11 @@ import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Base64;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -58,6 +62,7 @@ import com.google.firebase.database.ValueEventListener;
 import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileDescriptor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -194,14 +199,16 @@ public class JournalEditorActivity extends AppCompatActivity {
                                  Intent intent) {
         if (requestCode == REQ_CODE_TAKE_PICTURE
                 && resultCode == RESULT_OK && intent != null) {
-            Bitmap  photo = intent.getParcelableExtra("data");
+            Bitmap photo = intent.getParcelableExtra("data");
             photos.add(photo);
             String size = Integer.toString(photos.size());
             Log.e("photo","after add now exist " + size);
+            appendImages_process(photo);
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
             try {
+                Log.e("photo","album function is called");
                 handleImageOnKitKat(intent);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -210,19 +217,33 @@ public class JournalEditorActivity extends AppCompatActivity {
     }
 
     private void handleImageOnKitKat(Intent intent) throws IOException {
-        String imagePath = null;
         Uri uri = intent.getData();
         Bitmap photoBmp = null;
         if (uri != null) {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), uri);
-            photos.add(bitmap);
-            Log.e("phots", "after add(from album) now exist " + Integer.toString(photos.size()));
+            Log.e("photo","uri is not null");
+            photoBmp = uriToBitmap(uri);
+            photos.add(photoBmp);
+            Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
+            appendImages_process(photoBmp);
         } else{
             Log.e("photo","album: uri is null");
         }
     }
 
-
+    private Bitmap uriToBitmap(Uri selectedFileUri) {
+        Bitmap image = null;
+        try {
+            ParcelFileDescriptor parcelFileDescriptor =
+                    getContentResolver().openFileDescriptor(selectedFileUri, "r");
+            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+            image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
+            parcelFileDescriptor.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.e("photo","album image been converted to bitmap");
+        return image;
+    }
 
 
     public ArrayList<Bitmap> photo_bit_to_string(ArrayList<String> photo_string){
@@ -236,81 +257,6 @@ public class JournalEditorActivity extends AppCompatActivity {
         return photo_bit;
     }
 
-//    private void initialization() {
-//        et_title = (EditText) findViewById(R.id.editText_title);
-//        et_content = (EditText) findViewById(R.id.editText_content);
-//        ib_save = (ImageButton) findViewById(R.id.imageButton_save);
-//        ib_location = (ImageButton) findViewById(R.id.imageButton_location);
-//        ib_tags = (ImageButton) findViewById(R.id.imageButton_tags);
-//        ib_photos = (ImageButton) findViewById(R.id.imageButton_photos);
-//        ib_camera = (ImageButton) findViewById(R.id.imageButton_camera);
-//        tv_address = (TextView) findViewById(R.id.tv_location);
-//        scrollView_buttons = (HorizontalScrollView) findViewById(R.id.scrollView_tools);
-//        bottomContainer = (LinearLayout) findViewById(R.id.bottom_container);
-//        mResultReceiver = new AddressResultReceiver(new Handler());
-//        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-//        mAddressOutput = "";
-//
-//        if(journal != null){
-//            et_title.setText(journal.getTitle());
-//            et_content.setText(journal.getContent());
-//            ArrayList<String> photos_string_tep = journal.getPhotos();
-//
-//            if(photos_string_tep != null) {
-//                ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
-//                photos = photos_tep;
-//                Log.v("images", "add image: " + photos.size());
-//                for (int i = 0; i < photos.size(); i++) {
-//                    ImageView image = new ImageView(this);
-//                    image.setImageBitmap(photos.get(i));
-//                    bottomContainer.addView(image);
-//                }
-//            }
-//
-//            tags_from_db = journal.getTags();
-//            if(tags_from_db != null)
-//                tags = tags_from_db;
-//            else {
-//                tags = new ArrayList<>();
-//            }
-//
-//        }
-//        else {
-//            photos = new ArrayList<>();
-//            tags = new ArrayList<>();
-//        }
-//
-//        list_Of_Num = new ArrayList<>();
-//        list_Of_Map = new ArrayList<>();
-//
-//        // Set edit mode or read mode
-//        if (!editorMode) {
-//            et_title.setEnabled(false);
-//            et_content.setKeyListener(null);
-//            ib_camera.setEnabled(false);
-//            ib_location.setEnabled(false);
-//            ib_photos.setEnabled(false);
-//            ib_save.setEnabled(false);
-//            ib_tags.setEnabled(false);
-//            tv_address.setVisibility(View.GONE);
-//            scrollView_buttons.setVisibility(View.GONE);
-//        }
-//        else {
-//            getCurrentLocation();
-//            ShowAddress();
-//        }
-//    }
-
-
-//    private void ShowMap(){
-//        Intent intent = new Intent();
-//        intent.setClass(JournalEditorActivity.this, MapsActivity.class);
-//
-//        intent.putExtra("latitude", currentLatitude);
-//        intent.putExtra("longitude", currentLongitude);
-//
-//        startActivity(intent);
-//    }
 
     public void ini(){
         et_title = (EditText) findViewById(R.id.editText_title);
@@ -339,11 +285,8 @@ public class JournalEditorActivity extends AppCompatActivity {
                     ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
                     photos = photos_tep;
                     Log.v("images", "add image: " + photos.size());
-                    for (int i = 0; i < photos.size(); i++) {
-                        ImageView image = new ImageView(this);
-                        image.setImageBitmap(photos.get(i));
-                        bottomContainer.addView(image);
-                    }
+                    appendImages();
+
                 }
                 Log.e("photo", "initial size is: " + Integer.toString(photos.size()));
             }
@@ -537,6 +480,40 @@ public class JournalEditorActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void appendImages_process(Bitmap bitmap) {
+
+        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+//        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT );
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+
+        ImageView image = new ImageView(this);
+        image.setImageBitmap(bitmap);
+        image.setLayoutParams(layoutParams);
+        image.setScaleType(ImageView.ScaleType.CENTER);
+        image.setPadding(2, 0, 2, 0);
+        bottomContainer.addView(image);
+
+    }
+
+    private void appendImages() {
+
+        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+//        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT );
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+        for (int i = 0; i < photos.size(); i++) {
+            ImageView image = new ImageView(this);
+            image.setImageBitmap(photos.get(i));
+            image.setLayoutParams(layoutParams);
+            image.setScaleType(ImageView.ScaleType.CENTER);
+            image.setPadding(2,0,2,0);
+            bottomContainer.addView(image);
+        }
     }
 
     private void getCurrentLocation() {
