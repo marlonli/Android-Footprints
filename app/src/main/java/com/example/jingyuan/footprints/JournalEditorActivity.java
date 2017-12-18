@@ -199,10 +199,11 @@ public class JournalEditorActivity extends AppCompatActivity {
                                  Intent intent) {
         if (requestCode == REQ_CODE_TAKE_PICTURE
                 && resultCode == RESULT_OK && intent != null) {
-            Bitmap  photo = intent.getParcelableExtra("data");
+            Bitmap photo = intent.getParcelableExtra("data");
             photos.add(photo);
             String size = Integer.toString(photos.size());
             Log.e("photo","after add now exist " + size);
+            appendImages_process(photo);
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
@@ -223,6 +224,7 @@ public class JournalEditorActivity extends AppCompatActivity {
             photoBmp = uriToBitmap(uri);
             photos.add(photoBmp);
             Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
+            appendImages_process(photoBmp);
         } else{
             Log.e("photo","album: uri is null");
         }
@@ -478,6 +480,23 @@ public class JournalEditorActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void appendImages_process(Bitmap bitmap) {
+
+        int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+        int width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36, getResources().getDisplayMetrics());
+//        ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT );
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(width, height);
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+
+        ImageView image = new ImageView(this);
+        image.setImageBitmap(bitmap);
+        image.setLayoutParams(layoutParams);
+        image.setScaleType(ImageView.ScaleType.CENTER);
+        image.setPadding(2, 0, 2, 0);
+        bottomContainer.addView(image);
+
     }
 
     private void appendImages() {
