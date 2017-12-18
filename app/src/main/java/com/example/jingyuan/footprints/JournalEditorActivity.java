@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.location.Geocoder;
 import android.location.Location;
 import android.media.Image;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
@@ -61,9 +63,14 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -207,28 +214,92 @@ public class JournalEditorActivity extends AppCompatActivity {
         }
 
         if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && intent != null) {
-            try {
-                Log.e("photo","album function is called");
-                handleImageOnKitKat(intent);
-            } catch (IOException e) {
-                e.printStackTrace();
+//            try {
+//                Log.e("photo","album function is called");
+//                handleImageOnKitKat(intent);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+            Uri mImageCaptureUri = intent.getData();
+            Bitmap photoBmp = null;
+            if (mImageCaptureUri != null) {
+                photoBmp = scal(mImageCaptureUri);
+                photos.add(photoBmp);
+                Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
+                appendImages_process(photoBmp);
+                if(photoBmp != null && !photoBmp.isRecycled()){
+                    photoBmp.recycle();
+                    photoBmp = null;
+                }
             }
         }
     }
 
-    private void handleImageOnKitKat(Intent intent) throws IOException {
-        Uri uri = intent.getData();
-        Bitmap photoBmp = null;
-        if (uri != null) {
-            Log.e("photo","uri is not null");
-            photoBmp = uriToBitmap(uri);
-            photos.add(photoBmp);
-            Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
-            appendImages_process(photoBmp);
-        } else{
-            Log.e("photo","album: uri is null");
+    private Bitmap scal(Uri fileUri){
+        String path = fileUri.getPath();
+        File outputFile = new File(path);
+        long fileSize = outputFile.length();
+        final long fileMaxSize = 200 * 1024;
+        Bitmap bitmap = null;
+        if (fileSize >= fileMaxSize) {
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(path, options);
+            int height = options.outHeight;
+            int width = options.outWidth;
+
+            double scale = Math.sqrt((float) fileSize / fileMaxSize);
+            options.outHeight = (int) (height / scale);
+            options.outWidth = (int) (width / scale);
+            options.inSampleSize = (int) (scale + 0.5);
+            options.inJustDecodeBounds = false;
+
+            bitmap = BitmapFactory.decodeFile(path, options);
+            //outputFile = new File(PhotoUtil.createImageFile().getPath());
+        } else {
+            bitmap = uriToBitmap(fileUri);
         }
+        return bitmap;
     }
+
+//    private Bitmap getThumbnail(Uri uri, int reqWidth, int reqHeight) {
+//        Bitmap srcBmp = uriToBitmap(uri);
+//        // If picture is smaller than required thumbnail
+//        Bitmap dstBmp;
+//        if (srcBmp.getWidth() < reqWidth && srcBmp.getHeight() < reqHeight) {
+//            Log.e("photo", "album meets requirement");
+//            dstBmp = ThumbnailUtils.extractThumbnail(srcBmp, reqWidth, reqHeight);
+//            // Otherwise the ratio between measures is calculated to fit requested thumbnail's one
+//        } else {
+//            Log.e("photo", "album should be compressed");
+//            int x = 0, y = 0, width = srcBmp.getWidth(), height = srcBmp.getHeight();
+//            float ratio = ((float) reqWidth / (float) reqHeight) * ((float) srcBmp.getHeight() / (float) srcBmp.getWidth());
+//            if (ratio < 1) {
+//                x = (int) (srcBmp.getWidth() - srcBmp.getWidth() * ratio) / 2;
+//                width = (int) (srcBmp.getWidth() * ratio);
+//            } else {
+//                y = (int) (srcBmp.getHeight() - srcBmp.getHeight() / ratio) / 2;
+//                height = (int) (srcBmp.getHeight() / ratio);
+//            }
+//            dstBmp = Bitmap.createBitmap(srcBmp, x, y, width, height);
+//        }
+//        return dstBmp;
+//    }
+
+
+//    private void handleImageOnKitKat(Intent intent) throws IOException {
+//        Uri uri = intent.getData();
+//        Bitmap photoBmp = null;
+//        if (uri != null) {
+//            Log.e("photo","uri is not null");
+//            photoBmp = uriToBitmap(uri);
+//            photos.add(photoBmp);
+//            Log.e("photo", "after add(from album) now exist " + Integer.toString(photos.size()));
+//            appendImages_process(photoBmp);
+//        } else{
+//            Log.e("photo","album: uri is null");
+//        }
+//    }
 
     private Bitmap uriToBitmap(Uri selectedFileUri) {
         Bitmap image = null;
@@ -280,6 +351,8 @@ public class JournalEditorActivity extends AppCompatActivity {
             et_content.setText(journal.getContent());
             if (editorMode) {
                 tags = journal.getTags();
+                if (tags == null)
+                    tags = new ArrayList<>();
                 ArrayList<String> photos_string_tep = journal.getPhotos();
                 if(photos_string_tep != null) {
                     ArrayList<Bitmap> photos_tep = photo_bit_to_string(photos_string_tep);
@@ -433,7 +506,7 @@ public class JournalEditorActivity extends AppCompatActivity {
                     // Update the new journal
                     ArrayList<String> photo_string = photo_to_string(photos);
                     journal.setPhoto_string(photo_string);
-                    if (tags.size()!=0 && tags!=journal.getTags()){
+                    if (tags != null && tags.size()!=0 && tags!=journal.getTags()){
                         journal.setTags(tags);
                     }
                     String title_new = et_title.getText().toString();
